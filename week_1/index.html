@@ -1,0 +1,121 @@
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Creative Dev | Portfolio</title>
+        <link rel="stylesheet" href="styles.css">
+        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+        <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+    </head>
+    <body>
+
+        <nav class="navbar">
+            <div class="nav-container">
+                <a href="#" class="logo">PORT<span>FOLIO</span></a> 
+                <ul class="nav-menu">
+                    <li><a href="#home" class="nav-link active">Home</a></li>
+                    <li><a href="#projects" class="nav-link">Projects</a></li>
+                    <li><a href="#contact" class="nav-link">Contact</a></li>
+                </ul>
+                <div class="hamburger">
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+                </div>
+            </div>
+        </nav>
+
+        <section id="home" class="hero">
+            <div class="hero-container" style="display: flex; align-items: center; gap: 4rem; max-width: 1200px; text-align: left;">
+                
+                <div class="hero-content" style="flex: 1; align-items: flex-start;">
+                    <h2 class="fade-in">Hi, I'm <span class="text-gradient">Joel Sony</span></h2>
+                    <h1 class="fade-in delay-1">Backend & Systems Engineer</h1>
+                    <p class="fade-in delay-2" style="margin: 1.5rem 0;">
+                        Architecting scalable distributed systems and safety-first AI infrastructures. 
+                        Focused on high-performance APIs and edge storage coordination.
+                    </p>
+                    <div class="hero-btns fade-in delay-3">
+                        <a href="#projects" class="btn primary">View Systems</a>
+                        <a href="#contact" class="btn secondary">Let's Talk</a>
+                    </div>
+                </div>
+
+                <div class="hero-image fade-in delay-1" style="flex: 1; display: flex; justify-content: center;">
+                    <div class="photo-frame">
+                        <img src="./assets/myPhoto.jpeg" alt="Joel Sony" style="width: 320px; height: 400px; object-fit: cover; border-radius: 30px;">
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <section id="projects" class="section">
+            <h2 class="section-header">Technical Case Studies</h2>
+            <div class="grid">
+                
+                <div class="card backend-card">
+                    <div class="card-body">
+                        <div class="repo-icon"><i class="fas fa-server"></i></div>
+                        <h3>Distributed Edge Storage</h3>
+                        <p>A decentralized cluster management system utilizing WebSockets and REST to coordinate data sharding across unreliable mobile nodes.</p>
+                        <div class="tags"><span>FastAPI</span><span>WebSockets</span><span>Distributed Systems</span></div>
+                        <div class="card-footer">
+                            <a href="https://github.com/Joel-Sony/Cloud-Storage-phone-cluster" target="_blank" class="btn-glow">View Source Code</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card backend-card">
+                    <div class="card-body">
+                        <div class="repo-icon"><i class="fas fa-brain"></i></div>
+                        <h3>Safety-Aware AI Assistant</h3>
+                        <p>A multimodal RAG pipeline featuring a structured triage agent and Pinecone vector memory for secure, context-aware mental health support.</p>
+                        <div class="tags"><span>Python</span><span>RAG</span><span>Pinecone</span></div>
+                        <div class="card-footer">
+                            <a href="https://github.com/Joel-Sony/NLP_Project" target="_blank" class="btn-glow">View Source Code</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card backend-card">
+                    <div class="card-body">
+                        <div class="repo-icon"><i class="fas fa-envelope-open-text"></i></div>
+                        <h3>Newsletter Engine</h3>
+                        <p>An automated content synthesis platform with a robust versioning system and Supabase integration for structured data persistence.</p>
+                        <div class="tags"><span>Flask</span><span>Supabase</span><span>Gemini API</span></div>
+                        <div class="card-footer">
+                            <a href="https://github.com/Joel-Sony/Newsletter-Generator" target="_blank" class="btn-glow">View Source Code</a>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <section id="contact" class="section alt-bg">
+            <div class="contact-container">
+                <div class="contact-info">
+                    <h2>Ready to start a project?</h2>
+                    <p>I'm currently available for freelance work and full-time positions.</p>
+                </div>
+                <form id="contactForm" class="glass-form">
+                    <input type="text" id="name" placeholder="Full Name" required>
+                    <input type="email" id="email" placeholder="Email Address" required>
+                    <textarea id="message" rows="5" placeholder="Tell me about your project..." required></textarea>
+                    <button type="submit" class="btn primary">Send Message</button>
+                    <p id="formStatus" class="status-msg"></p>
+                </form>
+            </div>
+        </section>
+
+        <footer>
+            <p>JS</p>
+            <p>2026 Joel Sony</p>
+            <button id="backToTop" title="Back to Top"><i class="fas fa-arrow-up"></i> Back To the Top</button>
+        </footer>
+
+        <script src="script.js"></script>
+    </body>
+    </html>

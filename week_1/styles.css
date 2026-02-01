@@ -1,0 +1,388 @@
+
+:root {
+    --bg: #0f172a;
+    --card-bg: rgba(255, 255, 255, 0.05);
+    --primary: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+    --text: #f8fafc;
+    --text-dim: #94a3b8;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background-color: var(--bg);
+    color: var(--text);
+    font-family: 'Poppins', sans-serif;
+    overflow-x: hidden;
+}
+
+.navbar {
+    position: fixed;
+    width: 100%;
+    z-index: 1000;
+    background: rgba(15, 23, 42, 0.8);
+    backdrop-filter: blur(10px);
+}
+
+.nav-container {
+    max-width: 1200px;
+    margin: auto;
+    padding: 1.2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo {
+    font-weight: 700;
+    font-size: 1.5rem;
+    text-decoration: none;
+    color: #fff;
+}
+
+.logo span {
+    color: #818cf8;
+}
+
+.nav-menu {
+    display: flex;
+    list-style: none;
+    gap: 2rem;
+    padding-left:40rem;
+}
+
+.nav-link {
+    text-decoration: none;
+    color: var(--text-dim);
+    transition: 0.3s;
+    font-size: 0.9rem;
+}
+
+.nav-link.active, 
+.nav-link:hover {
+    color: #fff;
+}
+.hero {
+    min-height: 100vh; 
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 100px 1rem 2rem 1rem; 
+    box-sizing: border-box;
+}
+
+@media (max-width: 968px) {
+    .hero-container {
+        flex-direction: column-reverse;
+        gap: 2rem;
+        padding-top: 20px; 
+    }
+    
+    body {
+        overflow-y: auto !important;
+        height: auto;
+    }
+}
+
+.text-gradient {
+    background: var(--primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.hero h1 {
+    font-size: clamp(3rem, 8vw, 5rem);
+    line-height: 1.1;
+    margin-bottom: 1rem;
+}
+
+.hero p {
+    color: var(--text-dim);
+    font-size: 1.2rem;
+    max-width: 600px;
+    margin: auto;
+}
+
+.section {
+    padding: 100px 1.5rem;
+    max-width: 1200px;
+    margin: auto;
+}
+
+.section-header {
+    font-size: 2.5rem;
+    margin-bottom: 3rem;
+    text-align: center;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+}
+
+.card {
+    background: var(--card-bg);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    transition: 0.4s;
+    overflow: hidden;
+}
+
+.card:hover {
+    transform: translateY(-10px);
+    border-color: #6366f1;
+}
+
+.card-img {
+    height: 200px;
+    background-size: cover;
+    background-position: center;
+}
+
+.card-body {
+    padding: 1.5rem;
+}
+
+.tags span {
+    font-size: 0.7rem;
+    background: rgba(99, 102, 241, 0.2);
+    color: #818cf8;
+    padding: 4px 10px;
+    border-radius: 50px;
+    margin-right: 5px;
+}
+
+/* =========================================
+   5. CONTACT FORM & BUTTONS
+   ========================================= */
+.glass-form {
+    background: var(--card-bg);
+    padding: 2rem;
+    border-radius: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+input, 
+textarea {
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 1rem;
+    border-radius: 10px;
+    color: #fff;
+    outline: none;
+}
+
+input:focus {
+    border-color: #6366f1;
+}
+
+.btn {
+    padding: 1rem 2rem;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+    text-decoration: none;
+    text-align: center;
+    transition: 0.3s;
+}
+
+.btn.primary {
+    background: var(--primary);
+    color: #fff;
+}
+
+.btn.primary:hover {
+    opacity: 0.9;
+    transform: scale(1.05);
+}
+
+.btn.secondary {
+    background: transparent;
+    color: #fff;
+    border: 2px solid #818cf8;
+    margin-left: 10px;
+    transition: all 0.4s ease;
+}
+
+
+.btn.secondary:hover {
+    background: #818cf8;
+    color: #0f172a; 
+    box-shadow: 0 0 20px rgba(129, 140, 248, 0.4);
+    transform: translateY(-3px);
+}
+
+/* Ensure buttons align nicely on mobile */
+@media (max-width: 480px) {
+    .hero-btns {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+    .btn.secondary {
+        margin-left: 0;
+    }
+}
+
+@media (max-width: 768px) {
+    .nav-menu {
+        position: fixed;
+        left: -100%;
+        top: 70px;
+        flex-direction: column;
+        background: var(--bg);
+        width: 100%;
+        text-align: center;
+        transition: 0.3s;
+        padding: 2rem 0;
+    }
+
+    .nav-menu.active {
+        left: 0;
+    }
+
+    .hamburger {
+        cursor: pointer;
+        display: block;
+    }
+
+    .bar {
+        display: block;
+        width: 25px;
+        height: 3px;
+        margin: 5px;
+        background: #fff;
+    }
+}
+
+.hero-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem; /* This creates uniform spacing between the H1, P, and Buttons */
+}
+
+.hero-btns {
+    margin-top: 2.5rem; /* Specifically pushes the buttons down from the text */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+}
+
+/* Ensure the paragraph itself doesn't hug the H1 too tightly */
+.hero p {
+    margin-top: 1rem;
+    line-height: 1.8;
+}
+
+/* Container for the split hero */
+.hero-container {
+    padding: 0 2rem;
+}
+
+/* Glass frame for your photo */
+.photo-frame {
+    position: relative;
+    padding: 15px;
+    background: var(--card-bg);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 40px;
+    backdrop-filter: blur(10px);
+}
+
+/* Subtle glow behind the photo */
+.photo-frame::after {
+    content: '';
+    position: absolute;
+    inset: -10px;
+    background: var(--primary);
+    filter: blur(30px);
+    opacity: 0.2;
+    z-index: -1;
+    border-radius: 40px;
+}
+
+/* Responsive fix for the photo */
+@media (max-width: 968px) {
+    .hero-container {
+        flex-direction: column-reverse;
+        text-align: center !important;
+        padding-top: 120px;
+    }
+    .hero-content {
+        align-items: center !important;
+    }
+    .photo-frame img {
+        width: 250px !important;
+        height: 300px !important;
+    }
+}
+
+/* Styling for cards without images */
+.backend-card {
+    min-height: 320px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    background: rgba(30, 41, 59, 0.5) !important; 
+    border: 1px solid rgba(99, 102, 241, 0.2) !important;
+}
+
+.repo-icon {
+    font-size: 2rem;
+    color: #818cf8;
+    margin-bottom: 1.5rem;
+}
+
+.backend-card h3 {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    color: #fff;
+}
+
+.backend-card p {
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: var(--text-dim);
+}
+
+/* The Hover Glow Button */
+.btn-glow {
+    display: inline-block;
+    width: 100%;
+    margin-top: 1.5rem;
+    padding: 12px;
+    text-align: center;
+    color: #fff;
+    text-decoration: none;
+    border: 1px solid #6366f1;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+    background: rgba(99, 102, 241, 0.1);
+}
+
+.btn-glow:hover {
+    background: #6366f1;
+    color: #fff;
+    box-shadow: 0 0 25px rgba(99, 102, 241, 0.6); /* High intensity glow */
+    transform: translateY(-2px);
+}
+
+/* Stronger card hover */
+.backend-card:hover {
+    border-color: #6366f1 !important;
+    background: rgba(30, 41, 59, 0.8) !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}

@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Details Submission</title>
+    <link rel = "stylesheet" href = "style.css">
+</head>
+<body>
+    <h1>Submit your details</h1>
+    <form id = "detailsForm" >
+        <input type = "text" name = "name" placeholder = "Name">
+        <input type = "email" name = "email" placeholder = "Email">
+        <textarea name = "message" placeholder = "Your message here..."></textarea>
+        <button type = "submit">Submit</button>
+    </form>
+
+    <a href = "feedback.html" >View submitted forms</a>
+
+    <script>
+        function sanitize(input){
+            const element = document.createElement('div');
+            element.innerText = input;
+            return element.innerHTML;
+        }   
+
+        document.getElementById('detailsForm').addEventListener('submit', function(event){
+            event.preventDefault();
+            const formData = new FormData(this);
+            const name = sanitize(formData.get('name'));
+            const email = sanitize(formData.get('email'));
+            const message = sanitize(formData.get('message'));
+
+            if(!name || !email || !message){
+                alert('Please fill in all fields.');
+                return;
+            }
+            
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if(!emailRegex.test(email)){
+                alert('Please enter a valid email address.');
+                return;
+            }
+
+            const submissions = JSON.parse(localStorage.getItem('submissions')) || [];
+
+            submissions.push({ name, email, message });
+            
+            localStorage.setItem('submissions', JSON.stringify(submissions));
+
+            alert('Details submitted successfully!');
+
+            this.reset();
+        });
+    </script>
+</body>
+</html>

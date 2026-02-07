@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feedback Viewer</title>
+    <link rel = "stylesheet" href = "style.css">
+</head>
+<body>
+    <h1>Submitted Feedback</h1>
+    <div id="feedbackList"></div>
+
+    <script>
+        function displayFeedback() {
+            const feedbackList = document.getElementById('feedbackList');
+            const submissions = JSON.parse(localStorage.getItem('submissions')) || [];
+
+            if (submissions.length === 0) {
+                feedbackList.innerHTML = '<p>No feedback submitted yet.</p>';
+                return;
+            }
+
+            const list = document.createElement('ul');
+            submissions.forEach(submission => {
+                const listItem = document.createElement('li');
+                listItem.innerHTML = `<strong>Name:</strong> ${submission.name} <br>
+                                      <strong>Email:</strong> ${submission.email} <br>
+                                      <strong>Message:</strong> ${submission.message}`;
+                list.appendChild(listItem);
+            });
+            feedbackList.appendChild(list);
+        }
+        displayFeedback();
+    </script>
+</body>
+</html>

@@ -7,51 +7,53 @@
     <link rel = "stylesheet" href = "style.css">
 </head>
 <body>
-    <h1>Submit your details</h1>
-    <form id = "detailsForm" >
-        <input type = "text" name = "name" placeholder = "Name">
-        <input type = "email" name = "email" placeholder = "Email">
-        <textarea name = "message" placeholder = "Your message here..."></textarea>
-        <button type = "submit">Submit</button>
-    </form>
+    <div class = "container">
+        <h1>Submit your details</h1>
+        <form id = "detailsForm" >
+            <input type = "text" name = "name" placeholder = "Name">
+            <input type = "email" name = "email" placeholder = "Email">
+            <textarea name = "message" placeholder = "Your message here..."></textarea>
+            <button type = "submit">Submit</button>
+        </form>
 
-    <a href = "feedback.html" >View submitted forms</a>
+        <a href = "feedback.html" >View submitted forms</a>
 
-    <script>
-        function sanitize(input){
-            const element = document.createElement('div');
-            element.innerText = input;
-            return element.innerHTML;
-        }   
+        <script>
+            function sanitize(input){
+                const element = document.createElement('div');
+                element.innerText = input;
+                return element.innerHTML;
+            }   
 
-        document.getElementById('detailsForm').addEventListener('submit', function(event){
-            event.preventDefault();
-            const formData = new FormData(this);
-            const name = sanitize(formData.get('name'));
-            const email = sanitize(formData.get('email'));
-            const message = sanitize(formData.get('message'));
+            document.getElementById('detailsForm').addEventListener('submit', function(event){
+                event.preventDefault();
+                const formData = new FormData(this);
+                const name = sanitize(formData.get('name'));
+                const email = sanitize(formData.get('email'));
+                const message = sanitize(formData.get('message'));
 
-            if(!name || !email || !message){
-                alert('Please fill in all fields.');
-                return;
-            }
-            
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if(!emailRegex.test(email)){
-                alert('Please enter a valid email address.');
-                return;
-            }
+                if(!name || !email || !message){
+                    alert('Please fill in all fields.');
+                    return;
+                }
+                
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if(!emailRegex.test(email)){
+                    alert('Please enter a valid email address.');
+                    return;
+                }
 
-            const submissions = JSON.parse(localStorage.getItem('submissions')) || [];
+                const submissions = JSON.parse(localStorage.getItem('submissions')) || [];
 
-            submissions.push({ name, email, message });
-            
-            localStorage.setItem('submissions', JSON.stringify(submissions));
+                submissions.push({ name, email, message });
+                
+                localStorage.setItem('submissions', JSON.stringify(submissions));
 
-            alert('Details submitted successfully!');
+                alert('Details submitted successfully!');
 
-            this.reset();
-        });
-    </script>
+                this.reset();
+            });
+        </script>
+    </div>
 </body>
 </html>

@@ -4,9 +4,10 @@
 }
 
 body {
-  max-width: 640px;
-  margin: 48px auto;
-  padding: 0 16px;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   background: #f5f7fb;
   color: #333;
 }
@@ -75,4 +76,10 @@ li {
   border-radius: 6px;
   margin-bottom: 10px;
   box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.container {
+  width: 100%;
+  max-width: 640px;
+  padding: 16px;
 }

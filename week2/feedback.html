@@ -7,30 +7,32 @@
     <link rel = "stylesheet" href = "style.css">
 </head>
 <body>
-    <h1>Submitted Feedback</h1>
-    <div id="feedbackList"></div>
+    <div class = "container">
+        <h1>Submitted Feedback</h1>
+        <div id="feedbackList"></div>
 
-    <script>
-        function displayFeedback() {
-            const feedbackList = document.getElementById('feedbackList');
-            const submissions = JSON.parse(localStorage.getItem('submissions')) || [];
+        <script>
+            function displayFeedback() {
+                const feedbackList = document.getElementById('feedbackList');
+                const submissions = JSON.parse(localStorage.getItem('submissions')) || [];
 
-            if (submissions.length === 0) {
-                feedbackList.innerHTML = '<p>No feedback submitted yet.</p>';
-                return;
+                if (submissions.length === 0) {
+                    feedbackList.innerHTML = '<p>No feedback submitted yet.</p>';
+                    return;
+                }
+
+                const list = document.createElement('ul');
+                submissions.forEach(submission => {
+                    const listItem = document.createElement('li');
+                    listItem.innerHTML = `<strong>Name:</strong> ${submission.name} <br>
+                                        <strong>Email:</strong> ${submission.email} <br>
+                                        <strong>Message:</strong> ${submission.message}`;
+                    list.appendChild(listItem);
+                });
+                feedbackList.appendChild(list);
             }
-
-            const list = document.createElement('ul');
-            submissions.forEach(submission => {
-                const listItem = document.createElement('li');
-                listItem.innerHTML = `<strong>Name:</strong> ${submission.name} <br>
-                                      <strong>Email:</strong> ${submission.email} <br>
-                                      <strong>Message:</strong> ${submission.message}`;
-                list.appendChild(listItem);
-            });
-            feedbackList.appendChild(list);
-        }
-        displayFeedback();
-    </script>
+            displayFeedback();
+        </script>
+    </div>
 </body>
 </html>

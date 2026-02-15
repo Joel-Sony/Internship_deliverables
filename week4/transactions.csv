@@ -1,0 +1,2 @@
+transaction_id,type,member_id,book_id,due_date,return_date,fine
+86b964b8-226d-4694-a5cf-a16d6937143c,borrow,1,1,2026-02-01 18:34:03.934396,2026-02-15 18:40:06.145025,140.0

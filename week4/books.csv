@@ -1,0 +1,3 @@
+book_id,title,author,isBorrowed
+1,Harry Potter,JK Rowling,False
+2,,,False

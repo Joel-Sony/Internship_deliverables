@@ -1,0 +1,240 @@
+type: collection.insomnia.rest/5.0
+schema_version: "5.1"
+name: notes_api
+meta:
+  id: wrk_ba06d36125ce4942b3ac4874254be298
+  created: 1772297690078
+  modified: 1772297698569
+  description: ""
+collection:
+  - url: "{{base_url}}/register"
+    name: Register User
+    meta:
+      id: req_aaf29fa75c684f81bec442396bfe7d46
+      created: 1772297770980
+      modified: 1772298814026
+      isPrivate: false
+      description: ""
+      sortKey: -1772297770980
+    method: POST
+    body:
+      mimeType: application/json
+      text: |-
+        {
+          "username": "second",
+          "email": "second@test.com",
+          "password": "456789"
+        }
+    headers:
+      - name: Content-Type
+        value: application/json
+      - name: User-Agent
+        value: insomnia/12.4.0-beta.0
+        description: ""
+        disabled: false
+    settings:
+      renderRequestBody: true
+      encodeUrl: true
+      followRedirects: global
+      cookies:
+        send: true
+        store: true
+      rebuildPath: true
+  - url: {{base_url}}/login
+    name: Login User
+    meta:
+      id: req_4d3845d881644744bff3cdfe19e8f2ca
+      created: 1772297956782
+      modified: 1772298826610
+      isPrivate: false
+      description: ""
+      sortKey: -1772297956782
+    method: POST
+    body:
+      mimeType: application/json
+      text: |-
+        {
+          "username": "second",
+          "password": "456789"
+        }
+    headers:
+      - name: Content-Type
+        value: application/json
+      - name: User-Agent
+        value: insomnia/12.4.0-beta.0
+        description: ""
+        disabled: false
+    settings:
+      renderRequestBody: true
+      encodeUrl: true
+      followRedirects: global
+      cookies:
+        send: true
+        store: true
+      rebuildPath: true
+  - url: {{base_url}}/notes
+    name: Create Note
+    meta:
+      id: req_82b62fe2be3947c99dd2ba8178edfd80
+      created: 1772298055627
+      modified: 1772298873800
+      isPrivate: false
+      description: ""
+      sortKey: -1772298055627
+    method: POST
+    body:
+      mimeType: application/json
+      text: |-
+        {
+          "title": "Note Three",
+          "content": "So using insomnia"
+        }
+    headers:
+      - name: Content-Type
+        value: application/json
+      - name: User-Agent
+        value: insomnia/12.4.0-beta.0
+        description: ""
+        disabled: false
+    authentication:
+      type: bearer
+      disabled: false
+      token: "{{access_token2}}"
+    settings:
+      renderRequestBody: true
+      encodeUrl: true
+      followRedirects: global
+      cookies:
+        send: true
+        store: true
+      rebuildPath: true
+  - url: {{base_url}}/notes
+    name: Get Notes
+    meta:
+      id: req_0f534868dc074347a158b27caaaa4593
+      created: 1772298634607
+      modified: 1772299132990
+      isPrivate: false
+      description: ""
+      sortKey: -1772298634607
+    method: GET
+    headers:
+      - name: User-Agent
+        value: insomnia/12.4.0-beta.0
+        description: ""
+        disabled: false
+    authentication:
+      type: bearer
+      token: "{{access_token2}}"
+    settings:
+      renderRequestBody: true
+      encodeUrl: true
+      followRedirects: global
+      cookies:
+        send: true
+        store: true
+      rebuildPath: true
+  - url: {{base_url}}/notes/3
+    name: Get Note by ID
+    meta:
+      id: req_55b8bf36c17f402e8368c818dc956a08
+      created: 1772298681029
+      modified: 1772298908625
+      isPrivate: false
+      description: ""
+      sortKey: -1772298681029
+    method: GET
+    headers:
+      - name: User-Agent
+        value: insomnia/12.4.0-beta.0
+        description: ""
+        disabled: false
+    authentication:
+      type: bearer
+      token: "{{access_token}}"
+    settings:
+      renderRequestBody: true
+      encodeUrl: true
+      followRedirects: global
+      cookies:
+        send: true
+        store: true
+      rebuildPath: true
+  - url: {{base_url}}/notes/1
+    name: Update Note
+    meta:
+      id: req_712fb0bc00b94e4b9cfa6adf8ba4b260
+      created: 1772298711174
+      modified: 1772298739433
+      isPrivate: false
+      description: ""
+      sortKey: -1772298711174
+    method: PUT
+    body:
+      mimeType: application/json
+      text: |-
+        {
+          "title": "Updated Title",
+          "content": "Updated Content"
+        }
+    headers:
+      - name: Content-Type
+        value: application/json
+      - name: User-Agent
+        value: insomnia/12.4.0-beta.0
+        description: ""
+        disabled: false
+    authentication:
+      type: bearer
+      token: "{{access_token}}"
+    settings:
+      renderRequestBody: true
+      encodeUrl: true
+      followRedirects: global
+      cookies:
+        send: true
+        store: true
+      rebuildPath: true
+  - url: {{base_url}}/notes/1
+    name: Delete Note
+    meta:
+      id: req_e1978c6ca80842c2b1381f243fe0189f
+      created: 1772298756821
+      modified: 1772298771273
+      isPrivate: false
+      description: ""
+      sortKey: -1772298756821
+    method: DELETE
+    headers:
+      - name: User-Agent
+        value: insomnia/12.4.0-beta.0
+        description: ""
+        disabled: false
+    authentication:
+      type: bearer
+      token: "{{access_token}}"
+    settings:
+      renderRequestBody: true
+      encodeUrl: true
+      followRedirects: global
+      cookies:
+        send: true
+        store: true
+      rebuildPath: true
+cookieJar:
+  name: Default Jar
+  meta:
+    id: jar_8258a33284cc735b420c85b2be2ac5e99a46c51e
+    created: 1772297690099
+    modified: 1772297690099
+environments:
+  name: Base Environment
+  meta:
+    id: env_8258a33284cc735b420c85b2be2ac5e99a46c51e
+    created: 1772297690095
+    modified: 1772298846302
+    isPrivate: false
+  data:
+    access_token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTc3MjI5ODU0MSwianRpIjoiZjY4NGFjNTItY2JlOS00ODI0LWE4NjQtMTAzOTE2ZTdkYzIzIiwidHlwZSI6ImFjY2VzcyIsInN1YiI6IjEiLCJuYmYiOjE3NzIyOTg1NDEsImNzcmYiOiIyNTFlNzJkMi1kNTViLTQ0YjYtYTU3Ny0yODE4NDhmOGZhNjAiLCJleHAiOjE3NzIyOTk0NDF9.Plg9oWRcM_iXvu3RbmvPFcKFeC3qatGu8e5Uc8zAVQ0
+    access_token2: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTc3MjI5ODgzMSwianRpIjoiMzQwNTk1YTUtYzE5Yi00OTNkLTkzZGMtNjAzNjE4Y2UyNThlIiwidHlwZSI6ImFjY2VzcyIsInN1YiI6IjIiLCJuYmYiOjE3NzIyOTg4MzEsImNzcmYiOiJjYTYxZGJjOS1lODUyLTQ2ZTItODcyMy0zM2JlOTRiZTU5NGUiLCJleHAiOjE3NzIyOTk3MzF9.WvI4MtuqBbbTHfHsSBKXJeGHb8gaoUN9Fw39TwZJp60
+    base_url: http://127.0.0.1:5000

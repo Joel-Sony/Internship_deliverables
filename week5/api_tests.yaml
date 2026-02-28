@@ -40,7 +40,7 @@ collection:
         send: true
         store: true
       rebuildPath: true
-  - url: {{base_url}}/login
+  - url: "{{base_url}}/login"
     name: Login User
     meta:
       id: req_4d3845d881644744bff3cdfe19e8f2ca
@@ -72,7 +72,7 @@ collection:
         send: true
         store: true
       rebuildPath: true
-  - url: {{base_url}}/notes
+  - url: "{{base_url}}/notes"
     name: Create Note
     meta:
       id: req_82b62fe2be3947c99dd2ba8178edfd80
@@ -108,7 +108,7 @@ collection:
         send: true
         store: true
       rebuildPath: true
-  - url: {{base_url}}/notes
+  - url: "{{base_url}}/notes"
     name: Get Notes
     meta:
       id: req_0f534868dc074347a158b27caaaa4593
@@ -134,7 +134,7 @@ collection:
         send: true
         store: true
       rebuildPath: true
-  - url: {{base_url}}/notes/3
+  - url: "{{base_url}}/notes/3"
     name: Get Note by ID
     meta:
       id: req_55b8bf36c17f402e8368c818dc956a08
@@ -160,7 +160,7 @@ collection:
         send: true
         store: true
       rebuildPath: true
-  - url: {{base_url}}/notes/1
+  - url: "{{base_url}}/notes/1"
     name: Update Note
     meta:
       id: req_712fb0bc00b94e4b9cfa6adf8ba4b260
@@ -195,7 +195,7 @@ collection:
         send: true
         store: true
       rebuildPath: true
-  - url: {{base_url}}/notes/1
+  - url: "{{base_url}}/notes/1"
     name: Delete Note
     meta:
       id: req_e1978c6ca80842c2b1381f243fe0189f
@@ -238,3 +238,4 @@ environments:
     access_token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTc3MjI5ODU0MSwianRpIjoiZjY4NGFjNTItY2JlOS00ODI0LWE4NjQtMTAzOTE2ZTdkYzIzIiwidHlwZSI6ImFjY2VzcyIsInN1YiI6IjEiLCJuYmYiOjE3NzIyOTg1NDEsImNzcmYiOiIyNTFlNzJkMi1kNTViLTQ0YjYtYTU3Ny0yODE4NDhmOGZhNjAiLCJleHAiOjE3NzIyOTk0NDF9.Plg9oWRcM_iXvu3RbmvPFcKFeC3qatGu8e5Uc8zAVQ0
     access_token2: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTc3MjI5ODgzMSwianRpIjoiMzQwNTk1YTUtYzE5Yi00OTNkLTkzZGMtNjAzNjE4Y2UyNThlIiwidHlwZSI6ImFjY2VzcyIsInN1YiI6IjIiLCJuYmYiOjE3NzIyOTg4MzEsImNzcmYiOiJjYTYxZGJjOS1lODUyLTQ2ZTItODcyMy0zM2JlOTRiZTU5NGUiLCJleHAiOjE3NzIyOTk3MzF9.WvI4MtuqBbbTHfHsSBKXJeGHb8gaoUN9Fw39TwZJp60
     base_url: http://127.0.0.1:5000
+    

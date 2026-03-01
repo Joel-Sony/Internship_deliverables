@@ -25,3 +25,7 @@ DB Schema : [View Schema](week4/data/schema.sql)
 ## Week 5
 Flask User Notes API with JWT Authentication  
 Postman Collections: [View Collections](week5/api_tests.yaml)
+
+## Week 6
+Updated Flask User Notes API with Categories, tags and keyword search  
+Postman Collections: [View Collections](week6/updated_api_tests.yaml)

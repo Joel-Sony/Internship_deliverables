@@ -1,6 +1,8 @@
-# Week 5 – Flask Notes API with JWT Authentication
+# Week 6 – Updated Flask Notes API with categories, tags and keyword-search  
 This project implements a RESTful API using Flask.  
-The Postman Collection is present in [api_tests.yaml](./api_tests.yaml).  
+Updated with categories, tags and keyword search  
+
+The Postman Collection is present in [updated_api_tests.yaml](./api_tests.yaml).  
 The API can be hosted locally
 
 ## Setup
@@ -38,4 +40,6 @@ GET     /notes        (Protected)
 GET     /notes/<id>   (Protected)
 PUT     /notes/<id>   (Protected)
 DELETE  /notes/<id>   (Protected)
+POST    /categories   (Protected)
+GET     /categories   (Protected)
 ```

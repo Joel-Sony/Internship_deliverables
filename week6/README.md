@@ -1,9 +1,12 @@
-# Week 6 – Updated Flask Notes API with categories, tags and keyword-search  
-This project implements a RESTful API using Flask.  
-Updated with categories, tags and keyword search  
+# Week 6 – Updated Flask Notes API with categories, tags and keyword-search
+- This project implements a RESTful API using Flask.   
+- The Postman Collection is present in [updated_api_tests.yaml](./api_tests.yaml).  
 
-The Postman Collection is present in [updated_api_tests.yaml](./api_tests.yaml).  
-The API can be hosted locally
+## Overview
+
+1. Category-wise searching, tag-wise searching and keyword searching have been added to the /notes endpoint
+2. POST request /categories adds a note to a category
+3. GET request /categories gets all the categories defined by a user
 
 ## Setup
 1. Clone the repository

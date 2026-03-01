@@ -6,7 +6,6 @@ from data.models import User, Note, Category, Tag
 from services import (
     create_note,
     get_user_notes,
-    get_user_note_by_id,
     update_user_note,
     delete_user_note
 )
@@ -79,26 +78,7 @@ def get_notes_route():
     tag_name = request.args.get("tag")
     search = request.args.get("search")
 
-    query = Note.query.filter_by(user_id=user_id)
-
-    if category_id:
-        query = query.filter_by(category_id=category_id)
-
-    if tag_name:
-        query = query.join(Note.tags).filter(
-            Tag.name == tag_name,
-            Tag.user_id == user_id
-        )
-
-    if search:
-        query = query.filter(
-            or_(
-                Note.title.ilike(f"%{search}%"),
-                Note.content.ilike(f"%{search}%")
-            )
-        )
-
-    notes = query.all()
+    notes = get_user_notes(user_id,category_id,tag_name,search) 
 
     return jsonify([
         {
@@ -149,7 +129,7 @@ def create_note_route():
 def get_note_route(note_id):
     user_id = int(get_jwt_identity())
 
-    note = get_user_note_by_id(note_id, user_id)
+    note = Note.query.filter_by(id=note_id, user_id=user_id).first()
     if not note:
         return jsonify({"error": "Note not found"}), 404
 
@@ -172,11 +152,11 @@ def update_note_route(note_id):
     category_id = data.get("category_id")
     tags = data.get("tags")  # should be list
 
-    note = get_user_note_by_id(note_id, user_id)
+    note = Note.query.filter_by(id=note_id, user_id=user_id).first()
     if not note:
         return jsonify({"error": "Note not found"}), 404
 
-    updated = update_user_note(note, data.get("title"), data.get("content"), category_id, tags)
+    updated = update_user_note(user_id, note, data.get("title"), data.get("content"), category_id, tags)
 
     return jsonify({
         "id": updated.id,
@@ -190,7 +170,7 @@ def update_note_route(note_id):
 def delete_note_route(note_id):
     user_id = int(get_jwt_identity())
 
-    note = get_user_note_by_id(note_id, user_id)
+    note = Note.query.filter_by(id=note_id, user_id=user_id).first()
     if not note:
         return jsonify({"error": "Note not found"}), 404
 

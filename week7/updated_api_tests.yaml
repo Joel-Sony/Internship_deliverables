@@ -1,0 +1,303 @@
+type: collection.insomnia.rest/5.0
+schema_version: "5.1"
+name: updated_notes_api
+meta:
+  id: wrk_7bd62a3fd7324226be34f8b112319d81
+  created: 1772364532337
+  modified: 1772364532337
+  description: ""
+collection:
+  - url: "{{base_url}}/register"
+    name: New Request
+    meta:
+      id: req_c7aae3f344e44203a50f912901ef854e
+      created: 1772297770980
+      modified: 1772299970286
+      isPrivate: false
+      description: ""
+      sortKey: -1772297770980
+    method: POST
+    body:
+      mimeType: application/json
+      text: |-
+        {
+          "username": "second",
+          "email": "second@test.com",
+          "password": "456789"
+        }
+    headers:
+      - name: Content-Type
+        value: application/json
+      - name: User-Agent
+        value: insomnia/12.4.0-beta.0
+        description: ""
+        disabled: false
+    settings:
+      renderRequestBody: true
+      encodeUrl: true
+      followRedirects: global
+      cookies:
+        send: true
+        store: true
+      rebuildPath: true
+  - url: http://127.0.0.1:5000/login
+    name: New Request
+    meta:
+      id: req_d1f61c95756a4ed1a623bbfc1a746722
+      created: 1772297956782
+      modified: 1772298826610
+      isPrivate: false
+      description: ""
+      sortKey: -1772297956782
+    method: POST
+    body:
+      mimeType: application/json
+      text: |-
+        {
+          "username": "second",
+          "password": "456789"
+        }
+    headers:
+      - name: Content-Type
+        value: application/json
+      - name: User-Agent
+        value: insomnia/12.4.0-beta.0
+        description: ""
+        disabled: false
+    settings:
+      renderRequestBody: true
+      encodeUrl: true
+      followRedirects: global
+      cookies:
+        send: true
+        store: true
+      rebuildPath: true
+  - url: "{{base_url}}/notes"
+    name: New Request
+    meta:
+      id: req_b7b59822013642828a78d6808dfcb284
+      created: 1772298055627
+      modified: 1772364939540
+      isPrivate: false
+      description: ""
+      sortKey: -1772298055627
+    method: POST
+    body:
+      mimeType: application/json
+      text: |-
+        {
+          "title": "Gym session",
+          "content": "Leg day",
+          "category_id": 2,
+          "tags": ["health"]
+        }
+    headers:
+      - name: Content-Type
+        value: application/json
+      - name: User-Agent
+        value: insomnia/12.4.0-beta.0
+        description: ""
+        disabled: false
+    authentication:
+      type: bearer
+      disabled: false
+      token: "{{access_token}}"
+    settings:
+      renderRequestBody: true
+      encodeUrl: true
+      followRedirects: global
+      cookies:
+        send: true
+        store: true
+      rebuildPath: true
+  - url: "{{base_url}}/notes?search=API"
+    name: New Request
+    meta:
+      id: req_7f04230efd1b4963bb4f20c2f01913ec
+      created: 1772298634607
+      modified: 1772365021645
+      isPrivate: false
+      description: ""
+      sortKey: -1772298634607
+    method: GET
+    headers:
+      - name: User-Agent
+        value: insomnia/12.4.0-beta.0
+        description: ""
+        disabled: false
+    authentication:
+      type: bearer
+      token: "{{access_token}}"
+    settings:
+      renderRequestBody: true
+      encodeUrl: true
+      followRedirects: global
+      cookies:
+        send: true
+        store: true
+      rebuildPath: true
+  - url: "{{base_url}}/notes/2"
+    name: New Request
+    meta:
+      id: req_82240af7ff8b4e459d5f7c175241910a
+      created: 1772298681029
+      modified: 1772365046828
+      isPrivate: false
+      description: ""
+      sortKey: -1772298681029
+    method: GET
+    headers:
+      - name: User-Agent
+        value: insomnia/12.4.0-beta.0
+        description: ""
+        disabled: false
+    authentication:
+      type: bearer
+      token: "{{access_token}}"
+    settings:
+      renderRequestBody: true
+      encodeUrl: true
+      followRedirects: global
+      cookies:
+        send: true
+        store: true
+      rebuildPath: true
+  - url: "{{base_url}}/notes/1"
+    name: New Request
+    meta:
+      id: req_5657fc016a7b4fdca0150e82c83e4a94
+      created: 1772298711174
+      modified: 1772365058062
+      isPrivate: false
+      description: ""
+      sortKey: -1772298711174
+    method: PUT
+    body:
+      mimeType: application/json
+      text: |-
+        {
+          "title": "Finish API v2",
+          "content": "Add search support",
+          "category_id": 2,
+          "tags": ["backend", "refactor"]
+        }
+    headers:
+      - name: Content-Type
+        value: application/json
+      - name: User-Agent
+        value: insomnia/12.4.0-beta.0
+        description: ""
+        disabled: false
+    authentication:
+      type: bearer
+      token: "{{access_token}}"
+    settings:
+      renderRequestBody: true
+      encodeUrl: true
+      followRedirects: global
+      cookies:
+        send: true
+        store: true
+      rebuildPath: true
+  - url: "{{base_url}}/notes/2"
+    name: New Request
+    meta:
+      id: req_92e005a01f7a4ec9bd6f81a495203aec
+      created: 1772298756821
+      modified: 1772365080352
+      isPrivate: false
+      description: ""
+      sortKey: -1772298756821
+    method: DELETE
+    headers:
+      - name: User-Agent
+        value: insomnia/12.4.0-beta.0
+        description: ""
+        disabled: false
+    authentication:
+      type: bearer
+      token: "{{access_token}}"
+    settings:
+      renderRequestBody: true
+      encodeUrl: true
+      followRedirects: global
+      cookies:
+        send: true
+        store: true
+      rebuildPath: true
+  - url: "{{base_url}}/categories"
+    name: New Request
+    meta:
+      id: req_cc5af9d33bc94e4186346311075407ca
+      created: 1772364640875
+      modified: 1772364825164
+      isPrivate: false
+      description: ""
+      sortKey: -1772364640875
+    method: POST
+    body:
+      mimeType: application/json
+      text: |-
+        {
+        	"name" : "Work"
+        }
+    headers:
+      - name: Content-Type
+        value: application/json
+      - name: User-Agent
+        value: insomnia/12.4.0-beta.0
+        description: ""
+        disabled: false
+    authentication:
+      type: bearer
+      token: "{{access_token}}"
+    settings:
+      renderRequestBody: true
+      encodeUrl: true
+      followRedirects: global
+      cookies:
+        send: true
+        store: true
+      rebuildPath: true
+  - url: "{{base_url}}/categories"
+    name: New Request
+    meta:
+      id: req_58e73fc52b3c49ad96bad1f150f3289f
+      created: 1772364838834
+      modified: 1772364873142
+      isPrivate: false
+      description: ""
+      sortKey: -1772364838834
+    method: GET
+    headers:
+      - name: User-Agent
+        value: insomnia/12.4.0-beta.0
+        description: ""
+        disabled: false
+    authentication:
+      type: bearer
+      token: "{{access_token}}"
+    settings:
+      renderRequestBody: true
+      encodeUrl: true
+      followRedirects: global
+      cookies:
+        send: true
+        store: true
+      rebuildPath: true
+cookieJar:
+  name: Default Jar
+  meta:
+    id: jar_7faedf1b329247698b00a976fe3e315d
+    created: 1772297690099
+    modified: 1772297690099
+environments:
+  name: Base Environment
+  meta:
+    id: env_bd1bbef705694c7b908be38030866e81
+    created: 1772297690095
+    modified: 1772364573621
+    isPrivate: false
+  data:
+    access_token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTc3MjM2NDU1NSwianRpIjoiOTA0ZDg3ZWEtMTRkNy00ZWI5LWIyODItOGY1MGMyMjc0YTZkIiwidHlwZSI6ImFjY2VzcyIsInN1YiI6IjEiLCJuYmYiOjE3NzIzNjQ1NTUsImNzcmYiOiIwZjAwY2Q0ZS1lMjJmLTQ1MmMtYTYwMi1jZTRmZWY5NjRlZGYiLCJleHAiOjE3NzIzNjU0NTV9.GdA6IQOncyOe7eQYU_iy5guFdqdg3Pl-NRIUzBt9N5s
+    base_url: http://127.0.0.1:5000

@@ -1,0 +1,128 @@
+---
+info:
+  _postman_id: bbab291b-31bf-4dfa-ae41-81970da5c8b0
+  name: New Collection
+  schema: https://schema.getpostman.com/json/collection/v2.1.0/collection.json
+  _exporter_id: '52794104'
+  _collection_link: https://joelsonytab-6341271.postman.co/workspace/Joel-Sony's-Workspace~444c8527-12c2-4926-8bbc-b1379d5924c3/collection/52794104-bbab291b-31bf-4dfa-ae41-81970da5c8b0?action=share&source=collection_link&creator=52794104
+item:
+- name: "{{base_url}}/notes/3/share"
+  request:
+    auth:
+      type: bearer
+      bearer:
+      - key: token
+        value: "{{access_token}}"
+        type: string
+    method: POST
+    header: []
+    body:
+      mode: raw
+      raw: ''
+      options:
+        raw:
+          language: json
+    url:
+      raw: "{{base_url}}/notes/3/share"
+      host:
+      - "{{base_url}}"
+      path:
+      - notes
+      - '3'
+      - share
+  response:
+  - name: "{{base_url}}/notes/3/share"
+    originalRequest:
+      method: POST
+      header: []
+      body:
+        mode: raw
+        raw: ''
+        options:
+          raw:
+            language: json
+      url:
+        raw: "{{base_url}}/notes/3/share"
+        host:
+        - "{{base_url}}"
+        path:
+        - notes
+        - '3'
+        - share
+    status: CREATED
+    code: 201
+    _postman_previewlanguage: 
+    header:
+    - key: Server
+      value: Werkzeug/3.1.6 Python/3.10.12
+    - key: Date
+      value: Mon, 16 Mar 2026 16:47:11 GMT
+    - key: Content-Type
+      value: application/json
+    - key: Content-Length
+      value: '97'
+    - key: Connection
+      value: close
+    cookie: []
+    body: |-
+      {
+          "access_count": 0,
+          "expires_at": null,
+          "token": "b58b7777-0177-4beb-a1f1-67a87eac42be"
+      }
+- name: "{{base_url}}/share/ab8451d6-09ae-4cb5-9edb-dc32bad1c055"
+  request:
+    auth:
+      type: bearer
+      bearer:
+      - key: token
+        value: "{{access_token}}"
+        type: string
+    method: GET
+    header: []
+    url:
+      raw: "{{base_url}}/share/ab8451d6-09ae-4cb5-9edb-dc32bad1c055"
+      host:
+      - "{{base_url}}"
+      path:
+      - share
+      - ab8451d6-09ae-4cb5-9edb-dc32bad1c055
+  response:
+  - name: "{{base_url}}/share/ab8451d6-09ae-4cb5-9edb-dc32bad1c055"
+    originalRequest:
+      method: GET
+      header: []
+      url:
+        raw: "{{base_url}}/share/ab8451d6-09ae-4cb5-9edb-dc32bad1c055"
+        host:
+        - "{{base_url}}"
+        path:
+        - share
+        - ab8451d6-09ae-4cb5-9edb-dc32bad1c055
+    status: OK
+    code: 200
+    _postman_previewlanguage: ''
+    header:
+    - key: Server
+      value: Werkzeug/3.1.6 Python/3.10.12
+    - key: Date
+      value: Mon, 16 Mar 2026 16:56:14 GMT
+    - key: Content-Type
+      value: application/json
+    - key: Content-Length
+      value: '214'
+    - key: Connection
+      value: close
+    cookie: []
+    body: |-
+      {
+          "category": "Work",
+          "content": "Leg day",
+          "created_at": "Mon, 16 Mar 2026 16:00:09 GMT",
+          "id": 3,
+          "tags": [
+              "health"
+          ],
+          "title": "Gym session",
+          "updated_at": "Mon, 16 Mar 2026 16:00:09 GMT"
+      }

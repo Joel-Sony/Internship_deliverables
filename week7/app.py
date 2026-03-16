@@ -11,6 +11,7 @@ from services import (
 )
 from flask_migrate import Migrate
 from sqlalchemy import or_
+from datetime import datetime
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -214,7 +215,7 @@ def get_categories():
 def create_share_link(note_id):
     
     note = Note.query.get_or_404(note_id)
-    data = request.get_json()
+    data = request.get_json(silent=True)
 
     expires_at = None
 
@@ -242,7 +243,7 @@ def access_shared_note(token):
     if not share:
         return jsonify({"Error":"Link not found"})
     
-    if share.expires_at and shares.expires_at < datetime.utcnow():
+    if share.expires_at and share.expires_at < datetime.utcnow():
         return jsonify({"Error":"Link has expired"})
     
     share.access_count += 1

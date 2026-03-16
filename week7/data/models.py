@@ -1,7 +1,7 @@
 from extensions import db
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
-
+import uuid
 
 note_tags = db.Table(
     "note_tags",
@@ -41,6 +41,7 @@ class User(db.Model):
 
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
+
 class Note(db.Model):
     __tablename__ = "note"
 
@@ -65,6 +66,7 @@ class Note(db.Model):
         secondary=note_tags,
         back_populates="notes"
     )
+
 class Category(db.Model):
     __tablename__ = "category"
 
@@ -109,7 +111,7 @@ class ShareLink(db.Model):
     note_id = db.Column(db.Integer, db.ForeignKey("note.id"), nullable=False)
 
     token = db.Column(
-        db.String(30),
+        db.String(36),
         unique = True,
         default = lambda: str(uuid.uuid4()),
         nullable = False

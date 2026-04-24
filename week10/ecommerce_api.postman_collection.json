@@ -1,0 +1,169 @@
+{
+  "info": {
+    "name": "Week 10 — Product Image API",
+    "description": "Week 10 Assignment — Product Image Uploads\n\nFeatures: Single & batch image upload, automatic thumbnail generation, image validation, primary image management, and file cleanup.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8000/api"
+    },
+    {
+      "key": "product_id",
+      "value": "1"
+    }
+  ],
+  "item": [
+    {
+      "name": "Product Images",
+      "item": [
+        {
+          "name": "Upload Single Image",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/products/{{product_id}}/images/upload/",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "images",
+                  "type": "file",
+                  "src": "",
+                  "description": "Select an image file (jpg, jpeg, png, gif, webp). Max 5 MB."
+                },
+                {
+                  "key": "alt_text",
+                  "value": "Product front view",
+                  "type": "text"
+                },
+                {
+                  "key": "is_primary",
+                  "value": "true",
+                  "type": "text"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Upload Multiple Images",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/products/{{product_id}}/images/upload/",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "images",
+                  "type": "file",
+                  "src": "",
+                  "description": "First image file"
+                },
+                {
+                  "key": "images",
+                  "type": "file",
+                  "src": "",
+                  "description": "Second image file"
+                },
+                {
+                  "key": "images",
+                  "type": "file",
+                  "src": "",
+                  "description": "Third image file"
+                },
+                {
+                  "key": "alt_text",
+                  "value": "Product gallery shots",
+                  "type": "text"
+                },
+                {
+                  "key": "is_primary",
+                  "value": "false",
+                  "type": "text"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Upload Image (Invalid — No File)",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/products/{{product_id}}/images/upload/",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "alt_text",
+                  "value": "Missing image",
+                  "type": "text"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Upload Image (Invalid — Non-existent Product)",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/products/9999/images/upload/",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "images",
+                  "type": "file",
+                  "src": "",
+                  "description": "Select any image file"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "List Images for Product",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/products/{{product_id}}/images/"
+          }
+        },
+        {
+          "name": "Get Single Image",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/products/{{product_id}}/images/1/"
+          }
+        },
+        {
+          "name": "Get Image (Non-existent)",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/products/{{product_id}}/images/9999/"
+          }
+        },
+        {
+          "name": "Set Primary Image",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/products/{{product_id}}/images/1/set-primary/"
+          }
+        },
+        {
+          "name": "Delete Image",
+          "request": {
+            "method": "DELETE",
+            "url": "{{base_url}}/products/{{product_id}}/images/1/"
+          }
+        },
+        {
+          "name": "Delete Image (Non-existent)",
+          "request": {
+            "method": "DELETE",
+            "url": "{{base_url}}/products/{{product_id}}/images/9999/"
+          }
+        }
+      ]
+    }
+  ]
+}

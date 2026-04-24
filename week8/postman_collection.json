@@ -1,0 +1,235 @@
+{
+	"info": {
+		"name": "Week 8 - 2FA Auth System",
+		"description": "Django Two-Factor Authentication API with email OTP, role-based permissions, and account lockout.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8000"
+		},
+		{
+			"key": "jwt_token",
+			"value": ""
+		}
+	],
+	"item": [
+		{
+			"name": "Auth",
+			"item": [
+				{
+					"name": "Register User",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"admin1\",\n    \"email\": \"admin@test.com\",\n    \"password\": \"admin123\",\n    \"role\": \"admin\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/register/",
+							"host": ["{{base_url}}"],
+							"path": ["api", "auth", "register", ""]
+						},
+						"description": "Register a new user. Role can be: admin, moderator, or user."
+					}
+				},
+				{
+					"name": "Login (Get OTP)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"admin1\",\n    \"password\": \"admin123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/login/",
+							"host": ["{{base_url}}"],
+							"path": ["api", "auth", "login", ""]
+						},
+						"description": "Validates credentials and sends a 6-digit OTP to the user's email. Check the Django console output for the OTP (dev mode). Account locks after 5 failed attempts."
+					}
+				},
+				{
+					"name": "Verify OTP (Get JWT)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"if (jsonData.token) {",
+									"    pm.collectionVariables.set('jwt_token', jsonData.token);",
+									"    console.log('JWT token saved to collection variable.');",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"admin1\",\n    \"otp\": \"123456\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/verify-otp/",
+							"host": ["{{base_url}}"],
+							"path": ["api", "auth", "verify-otp", ""]
+						},
+						"description": "Verify the OTP received via email. Replace '123456' with the actual OTP from the Django console. On success, returns a JWT token (auto-saved to collection variable)."
+					}
+				},
+				{
+					"name": "Resend OTP",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"admin1\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/resend-otp/",
+							"host": ["{{base_url}}"],
+							"path": ["api", "auth", "resend-otp", ""]
+						},
+						"description": "Invalidates old OTPs and sends a new one to the user's email."
+					}
+				}
+			]
+		},
+		{
+			"name": "Protected Endpoints",
+			"item": [
+				{
+					"name": "Admin Dashboard",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/admin/dashboard/",
+							"host": ["{{base_url}}"],
+							"path": ["api", "admin", "dashboard", ""]
+						},
+						"description": "Admin-only endpoint. Requires JWT with role='admin'."
+					}
+				},
+				{
+					"name": "Moderator Panel",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/moderator/panel/",
+							"host": ["{{base_url}}"],
+							"path": ["api", "moderator", "panel", ""]
+						},
+						"description": "Moderator+ endpoint. Requires JWT with role='admin' or 'moderator'."
+					}
+				},
+				{
+					"name": "User Profile",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/user/profile/",
+							"host": ["{{base_url}}"],
+							"path": ["api", "user", "profile", ""]
+						},
+						"description": "Any authenticated user. Requires a valid JWT token."
+					}
+				}
+			]
+		},
+		{
+			"name": "Test Scenarios",
+			"item": [
+				{
+					"name": "Register Regular User",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"user1\",\n    \"email\": \"user@test.com\",\n    \"password\": \"user1234\",\n    \"role\": \"user\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/register/",
+							"host": ["{{base_url}}"],
+							"path": ["api", "auth", "register", ""]
+						},
+						"description": "Register a regular user to test role restrictions."
+					}
+				},
+				{
+					"name": "Login with Wrong Password (Lockout Test)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"user1\",\n    \"password\": \"wrongpassword\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/login/",
+							"host": ["{{base_url}}"],
+							"path": ["api", "auth", "login", ""]
+						},
+						"description": "Send this 5 times to trigger account lockout."
+					}
+				}
+			]
+		}
+	]
+}

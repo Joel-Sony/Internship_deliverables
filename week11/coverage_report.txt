@@ -1,0 +1,21 @@
+Name                                    Stmts   Miss  Cover   Missing
+---------------------------------------------------------------------
+ecommerce/__init__.py                       0      0   100%
+ecommerce/settings.py                      23      0   100%
+ecommerce/urls.py                           7      1    86%   29
+manage.py                                  11      2    82%   12-13
+store/__init__.py                           0      0   100%
+store/admin.py                             31      1    97%   27
+store/apps.py                               4      0   100%
+store/filters.py                           15      3    80%   18-20
+store/migrations/0001_initial.py            8      0   100%
+store/migrations/0002_productimage.py       7      0   100%
+store/migrations/__init__.py                0      0   100%
+store/models.py                           113     13    88%   27, 39-40, 123, 151, 154-155, 164, 172, 174, 176, 183-185
+store/serializers.py                      115     29    75%   20-25, 48, 54, 84, 90, 95, 116-118, 121-123, 140-147, 150-155, 174, 179
+store/test_extra.py                        78      0   100%
+store/tests.py                             90      1    99%   62
+store/urls.py                              13      0   100%
+store/views.py                            192     36    81%   32, 68-69, 75-78, 102, 115, 137-138, 150, 163, 179-180, 191, 198, 212, 219, 231-232, 244, 251, 269-270, 308, 320-327, 338, 342, 357, 397-398
+---------------------------------------------------------------------
+TOTAL                                     707     86    88%

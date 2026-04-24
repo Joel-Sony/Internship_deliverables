@@ -41,6 +41,7 @@ class User(db.Model):
 
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
+    
 class Note(db.Model):
     __tablename__ = "note"
 
@@ -65,6 +66,7 @@ class Note(db.Model):
         secondary=note_tags,
         back_populates="notes"
     )
+
 class Category(db.Model):
     __tablename__ = "category"
 

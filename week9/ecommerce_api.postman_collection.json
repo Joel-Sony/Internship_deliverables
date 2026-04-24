@@ -1,0 +1,327 @@
+{
+  "info": {
+    "name": "E-Commerce Backend API",
+    "description": "Week 9 Assignment — Advanced ORM & Pagination\n\nFeatures: Products, Categories, Users, Carts with search, filters, pagination, and aggregations.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8000/api"
+    }
+  ],
+  "item": [
+    {
+      "name": "Categories",
+      "item": [
+        {
+          "name": "List Categories",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/categories/"
+          }
+        },
+        {
+          "name": "Create Category",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/categories/",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Sports\",\n  \"description\": \"Sports equipment and accessories\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Get Category by ID",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/categories/1/"
+          }
+        },
+        {
+          "name": "Update Category",
+          "request": {
+            "method": "PUT",
+            "url": "{{base_url}}/categories/1/",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Electronics & Gadgets\",\n  \"description\": \"Updated description\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete Category",
+          "request": {
+            "method": "DELETE",
+            "url": "{{base_url}}/categories/5/"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Products",
+      "item": [
+        {
+          "name": "List Products (Paginated)",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/products/?page=1"
+          }
+        },
+        {
+          "name": "List Products - Page 2",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/products/?page=2"
+          }
+        },
+        {
+          "name": "Search Products by Name",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/products/?search=laptop"
+          }
+        },
+        {
+          "name": "Filter by Price Range",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/products/?min_price=20&max_price=100"
+          }
+        },
+        {
+          "name": "Filter by Category ID",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/products/?category=1"
+          }
+        },
+        {
+          "name": "Filter by Category Name",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/products/?category_name=electronics"
+          }
+        },
+        {
+          "name": "Filter In-Stock Products",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/products/?in_stock=true"
+          }
+        },
+        {
+          "name": "Order by Price (Low to High)",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/products/?ordering=price"
+          }
+        },
+        {
+          "name": "Order by Price (High to Low)",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/products/?ordering=-price"
+          }
+        },
+        {
+          "name": "Combined: Search + Filter + Order",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/products/?search=&min_price=10&max_price=500&category=1&ordering=price"
+          }
+        },
+        {
+          "name": "Create Product",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/products/",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Tablet\",\n  \"description\": \"10-inch Android tablet\",\n  \"price\": 299.99,\n  \"stock\": 30,\n  \"category\": 1\n}"
+            }
+          }
+        },
+        {
+          "name": "Create Product (Invalid - Negative Price)",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/products/",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Bad Product\",\n  \"price\": -10,\n  \"stock\": 5,\n  \"category\": 1\n}"
+            }
+          }
+        },
+        {
+          "name": "Get Product by ID",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/products/1/"
+          }
+        },
+        {
+          "name": "Update Product",
+          "request": {
+            "method": "PATCH",
+            "url": "{{base_url}}/products/1/",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"price\": 649.99,\n  \"stock\": 45\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete Product",
+          "request": {
+            "method": "DELETE",
+            "url": "{{base_url}}/products/13/"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "List Users",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/users/"
+          }
+        },
+        {
+          "name": "Register User",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/users/",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"newuser\",\n  \"email\": \"newuser@example.com\",\n  \"password\": \"securepass123\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Register User (Invalid - Short Password)",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/users/",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"baduser\",\n  \"email\": \"bad@example.com\",\n  \"password\": \"123\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Get User by ID",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/users/1/"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Cart",
+      "item": [
+        {
+          "name": "View Cart (User 1)",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/carts/1/"
+          }
+        },
+        {
+          "name": "Add Item to Cart",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/carts/1/add/",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"product\": 1,\n  \"quantity\": 2\n}"
+            }
+          }
+        },
+        {
+          "name": "Add Another Item to Cart",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/carts/1/add/",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"product\": 4,\n  \"quantity\": 3\n}"
+            }
+          }
+        },
+        {
+          "name": "Remove Item from Cart",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/carts/1/remove/",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"product\": 4\n}"
+            }
+          }
+        },
+        {
+          "name": "Clear Cart",
+          "request": {
+            "method": "DELETE",
+            "url": "{{base_url}}/carts/1/clear/"
+          }
+        },
+        {
+          "name": "View Cart (Non-existent User)",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/carts/999/"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Aggregations & Stats",
+      "item": [
+        {
+          "name": "Product Stats (Aggregations)",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/stats/"
+          }
+        }
+      ]
+    }
+  ]
+}

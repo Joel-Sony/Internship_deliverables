@@ -1,0 +1,759 @@
+================================================================================
+           WEEK 9 — E-COMMERCE BACKEND API: COMPLETE PROJECT EXPLANATION
+================================================================================
+
+TABLE OF CONTENTS
+─────────────────
+  1. Project Overview
+  2. Technology Stack & Dependencies
+  3. Project Structure (File-by-File)
+  4. Database Schema & Models (models.py)
+  5. Serializers — Data Validation & Transformation (serializers.py)
+  6. Views — Business Logic & API Endpoints (views.py)
+  7. Filtering System (filters.py)
+  8. Custom Exception Handling (exceptions.py)
+  9. URL Routing (urls.py)
+ 10. Admin Panel Configuration (admin.py)
+ 11. Django REST Framework Settings (settings.py)
+ 12. Seed Script — Sample Data (seed.py)
+ 13. API Endpoint Reference
+ 14. Request/Response Flow (How a Request Travels Through the App)
+ 15. Key Design Decisions & Patterns Used
+
+
+================================================================================
+1. PROJECT OVERVIEW
+================================================================================
+
+This project is a simplified E-Commerce Backend API built using Django and Django
+REST Framework (DRF). It demonstrates advanced ORM usage including:
+
+  • Full CRUD operations for Products, Categories, Users, and Shopping Carts
+  • Product search (by name/description) using DRF's SearchFilter
+  • Product filtering (by price range, category, stock availability) using
+    django-filter
+  • Pagination (10 items per page via DRF's PageNumberPagination)
+  • Data aggregation using Django ORM's aggregate() and annotate() functions
+  • Robust input validation at the serializer level to prevent bad data from
+    reaching the database
+  • Custom exception handling to return clean JSON errors instead of exposing
+    raw database errors to users
+
+The project uses SQLite as the database (no external DB setup required) and
+comes with a Postman collection for testing all endpoints.
+
+
+================================================================================
+2. TECHNOLOGY STACK & DEPENDENCIES
+================================================================================
+
+  Python 3          — Programming language
+  Django 5.2.12     — Web framework (handles ORM, migrations, admin, auth)
+  DRF 3.17.1        — Django REST Framework (builds the RESTful API layer)
+  django-filter 25.2— Provides FilterSet classes for query parameter filtering
+  SQLite            — Lightweight file-based database (ships with Python)
+  asgiref 3.11.1    — ASGI utilities (required by Django)
+  sqlparse 0.5.5    — SQL parser (used by Django's ORM debugging)
+
+All dependencies are listed in requirements.txt and can be installed with:
+  pip install -r requirements.txt
+
+
+================================================================================
+3. PROJECT STRUCTURE (FILE-BY-FILE)
+================================================================================
+
+week9/
+├── manage.py                              # Django CLI entry point
+├── requirements.txt                       # Python dependencies
+├── db.sqlite3                             # SQLite database file
+├── README.md                              # Project README
+├── ecommerce_api.postman_collection.json  # Postman collection for testing
+│
+├── ecommerce/                             # Django project config package
+│   ├── __init__.py                        # Makes it a Python package
+│   ├── settings.py                        # All Django/DRF configuration
+│   ├── urls.py                            # Root URL configuration
+│   ├── wsgi.py                            # WSGI entry point (production)
+│   └── asgi.py                            # ASGI entry point (async)
+│
+├── store/                                 # Main application package
+│   ├── __init__.py                        # Makes it a Python package
+│   ├── apps.py                            # App configuration
+│   ├── models.py                          # Database models (4 models)
+│   ├── serializers.py                     # DRF serializers (5 serializers)
+│   ├── views.py                           # API views (4 ViewSets + 1 FBV)
+│   ├── filters.py                         # Product filter class
+│   ├── exceptions.py                      # Custom exception handler
+│   ├── urls.py                            # App-level URL routing
+│   ├── admin.py                           # Django admin registrations
+│   ├── seed.py                            # Database seeding script
+│   ├── tests.py                           # Test file (placeholder)
+│   └── migrations/
+│       ├── __init__.py
+│       └── 0001_initial.py                # Auto-generated migration
+│
+└── venv/                                  # Virtual environment (not tracked)
+
+
+================================================================================
+4. DATABASE SCHEMA & MODELS (models.py)
+================================================================================
+
+The application defines 4 custom models. It also uses Django's built-in User
+model from django.contrib.auth.models.
+
+─── 4.1 Category Model ───
+
+  class Category(models.Model):
+      name        = CharField(max_length=100, unique=True)
+      description = TextField(blank=True)
+      created_at  = DateTimeField(auto_now_add=True)
+
+  • 'unique=True' on name ensures no duplicate category names at the DB level.
+  • 'auto_now_add=True' automatically sets the timestamp when the record is
+    created — it is NOT editable afterward.
+  • Meta: verbose_name_plural = "categories" (fixes the admin panel label),
+    ordering = ['name'] (alphabetical by default).
+
+─── 4.2 Product Model ───
+
+  class Product(models.Model):
+      name        = CharField(max_length=200)
+      description = TextField(blank=True)
+      price       = DecimalField(max_digits=10, decimal_places=2,
+                                 validators=[MinValueValidator(0.01)])
+      stock       = PositiveIntegerField(default=0)
+      category    = ForeignKey(Category, on_delete=CASCADE, related_name='products')
+      created_at  = DateTimeField(auto_now_add=True)
+      updated_at  = DateTimeField(auto_now=True)
+
+  • DecimalField is used for price instead of FloatField to avoid floating-point
+    precision issues (important for financial data).
+  • MinValueValidator(0.01) ensures the price is at least 0.01 at the model level.
+  • PositiveIntegerField for stock ensures it can never be negative at the DB
+    level.
+  • ForeignKey to Category with on_delete=CASCADE means: if a category is
+    deleted, all its products are also deleted.
+  • related_name='products' allows reverse access: category.products.all()
+  • auto_now=True on updated_at auto-updates the timestamp on every .save().
+  • Meta: ordering = ['-created_at'] means newest products appear first by
+    default.
+
+─── 4.3 Cart Model ───
+
+  class Cart(models.Model):
+      user       = OneToOneField(User, on_delete=CASCADE, related_name='cart')
+      created_at = DateTimeField(auto_now_add=True)
+      updated_at = DateTimeField(auto_now=True)
+
+  • OneToOneField means each User can have exactly ONE cart. This is a 1:1
+    relationship enforced at the DB level.
+  • related_name='cart' allows: user.cart to access the user's cart directly.
+  • on_delete=CASCADE: if the User is deleted, their cart is also deleted.
+
+─── 4.4 CartItem Model ───
+
+  class CartItem(models.Model):
+      cart     = ForeignKey(Cart, on_delete=CASCADE, related_name='items')
+      product  = ForeignKey(Product, on_delete=CASCADE)
+      quantity = PositiveIntegerField(default=1, validators=[MinValueValidator(1)])
+
+      class Meta:
+          unique_together = ('cart', 'product')
+
+      @property
+      def subtotal(self):
+          return self.product.price * self.quantity
+
+  • This is a junction/bridge table that connects Cart and Product in a
+    many-to-many-like relationship WITH extra data (quantity).
+  • unique_together = ('cart', 'product') ensures a product can only appear
+    ONCE in a given cart (you update quantity instead of adding duplicate rows).
+  • related_name='items' on the cart field allows: cart.items.all()
+  • The subtotal @property is a computed field — it is NOT stored in the
+    database. It is calculated on-the-fly as price × quantity every time it is
+    accessed.
+
+─── 4.5 User Model (Django built-in) ───
+
+  We use Django's built-in auth_user table. We do NOT define a custom User
+  model. Fields we use from it:
+    - id, username, email, password, date_joined
+  The User model is imported from django.contrib.auth.models.
+
+
+DATABASE RELATIONSHIPS DIAGRAM:
+
+  ┌──────────┐       1:N       ┌──────────┐
+  │ Category │◄────────────────│ Product  │
+  └──────────┘                 └──────────┘
+                                    │
+                                    │ N:1
+                                    ▼
+  ┌──────────┐       1:1       ┌──────────┐       1:N       ┌──────────┐
+  │   User   │◄────────────────│   Cart   │◄────────────────│ CartItem │
+  └──────────┘                 └──────────┘                 └──────────┘
+
+  Category 1 ──── N Products
+  User     1 ──── 1 Cart
+  Cart     1 ──── N CartItems
+  Product  1 ──── N CartItems
+
+
+================================================================================
+5. SERIALIZERS — DATA VALIDATION & TRANSFORMATION (serializers.py)
+================================================================================
+
+Serializers in DRF serve two purposes:
+  1. SERIALIZATION: Convert Django model instances → JSON for API responses.
+  2. DESERIALIZATION + VALIDATION: Convert incoming JSON → validated Python data
+     for creating/updating model instances.
+
+─── 5.1 CategorySerializer ───
+
+  Fields: id, name, description, product_count, created_at
+
+  • product_count is an IntegerField(read_only=True, required=False).
+    It is NOT a model field — it's an annotated field that gets populated in
+    the view's get_queryset() method using .annotate(product_count=Count('products')).
+  • validate_name(): Performs case-INSENSITIVE uniqueness check. If someone
+    tries to create "electronics" when "Electronics" already exists, it rejects
+    it. Uses .filter(name__iexact=value). On update, it excludes the current
+    instance from the check using .exclude(pk=self.instance.pk).
+
+─── 5.2 ProductSerializer ───
+
+  Fields: id, name, description, price, stock, category, category_name,
+          created_at, updated_at
+
+  • category_name is a read-only CharField with source='category.name'. This
+    means the API response includes the human-readable category name alongside
+    the category ID, so clients don't need a second request.
+  • validate_price(): Ensures price > 0 (rejects zero or negative values).
+  • validate_stock(): Ensures stock >= 0 (rejects negative values).
+
+─── 5.3 UserSerializer ───
+
+  Fields: id, username, email, password, date_joined
+
+  • password is CharField(write_only=True, min_length=6). The 'write_only=True'
+    means the password will NEVER appear in any API response — it's only
+    accepted on input. min_length=6 enforces a minimum password length.
+  • date_joined is read_only (set automatically by Django).
+  • validate_email(): Ensures email is not empty AND is unique across all users.
+  • create(): Uses User.objects.create_user() instead of User.objects.create().
+    This is CRITICAL because create_user() hashes the password before saving.
+    Using create() would store the password in plain text.
+
+─── 5.4 CartItemSerializer ───
+
+  Fields: id, product, product_name, product_price, quantity, subtotal
+
+  • product_name and product_price are read-only fields sourced from the
+    related Product object.
+  • subtotal uses the @property defined on the CartItem model.
+  • validate_quantity(): Ensures quantity >= 1.
+  • validate_product(): Checks if the product is in stock (stock >= 1).
+  • validate() (object-level validation): Cross-checks that the requested
+    quantity does not exceed the product's available stock.
+
+─── 5.5 CartSerializer ───
+
+  Fields: id, user, items, item_count, total, created_at, updated_at
+
+  • items = CartItemSerializer(many=True, read_only=True) — nested serializer
+    that includes all cart items with full product details.
+  • total is a SerializerMethodField. Its value is computed by get_total(),
+    which sums up all item subtotals: sum(item.subtotal for item in obj.items.all()).
+  • item_count is also a SerializerMethodField that returns obj.items.count().
+  • user is read_only because the cart is always tied to a specific user.
+
+
+================================================================================
+6. VIEWS — BUSINESS LOGIC & API ENDPOINTS (views.py)
+================================================================================
+
+The views file uses DRF's ViewSets (class-based views that automatically map
+HTTP methods to CRUD actions) and one function-based view.
+
+─── 6.1 CategoryViewSet (ModelViewSet) ───
+
+  Inherits: viewsets.ModelViewSet (provides list, create, retrieve, update,
+  partial_update, destroy out of the box)
+
+  • get_queryset(): Returns Category.objects.annotate(product_count=Count('products')).
+    Instead of using the default queryset, we override get_queryset() to add
+    an annotation. This uses Django ORM's annotate() to COUNT the number of
+    products in each category and attach it as a 'product_count' field.
+
+  • destroy(): Overrides the default delete behavior. Before deleting, it
+    checks if the category has any products (category.products.exists()). If
+    products exist, it returns a 400 error refusing to delete. This is a
+    BUSINESS RULE: we don't allow deleting categories that still contain
+    products because it would cascade-delete all those products too.
+
+─── 6.2 ProductViewSet (ModelViewSet) ───
+
+  • queryset: Product.objects.select_related('category').all()
+    select_related('category') performs a SQL JOIN to fetch the related Category
+    in the same query. Without this, accessing product.category.name would
+    trigger a SEPARATE SQL query for EACH product (N+1 problem). This
+    optimization reduces N+1 queries to a single query.
+
+  • filterset_class = ProductFilter — connects the django-filter FilterSet
+    (defined in filters.py) for query parameter filtering.
+
+  • search_fields = ['name', 'description'] — DRF's SearchFilter will look
+    for the ?search= parameter and do a case-insensitive partial match (icontains)
+    on both the name and description fields.
+
+  • ordering_fields = ['price', 'name', 'created_at', 'stock'] — allowed
+    fields for ?ordering= parameter.
+
+  • ordering = ['-created_at'] — default ordering (newest first) when no
+    ?ordering= is specified.
+
+─── 6.3 UserViewSet (ModelViewSet) ───
+
+  • http_method_names = ['get', 'post'] — restricts allowed HTTP methods.
+    This means users can only be listed (GET), created (POST), or retrieved
+    (GET /users/{id}/). PUT, PATCH, and DELETE are NOT allowed.
+
+─── 6.4 CartViewSet (viewsets.ViewSet) ───
+
+  Uses viewsets.ViewSet (NOT ModelViewSet) because cart operations don't follow
+  standard CRUD patterns. It's organized around a user_id path parameter.
+
+  Endpoints:
+    GET  /carts/{user_id}/        → retrieve()  → View a user's cart
+    POST /carts/{user_id}/add/    → add()        → Add item to cart
+    POST /carts/{user_id}/remove/ → remove()     → Remove item from cart
+    DELETE /carts/{user_id}/clear/ → clear()     → Clear all items
+
+  • retrieve(): Gets the cart for the given user. If the user exists but has
+    no cart, one is auto-created (get_or_create).
+
+  • add(): This is the most complex endpoint. It:
+    1. Gets/creates the cart for the user.
+    2. Validates the incoming data (product ID + quantity) via CartItemSerializer.
+    3. Checks if the product is ALREADY in the cart:
+       - If YES: increments the quantity, but first checks that the new total
+         doesn't exceed available stock.
+       - If NO: creates a new CartItem.
+    4. Returns the full updated cart.
+
+  • remove(): Finds the CartItem by cart + product_id, deletes it. Returns
+    404 if the product wasn't in the cart.
+
+  • clear(): Deletes ALL items from the cart using cart.items.all().delete(),
+    which is a bulk delete (single SQL DELETE statement, not N separate ones).
+
+  • _get_or_create_cart(): Private helper method. Looks up the User by primary
+    key. If the user doesn't exist, returns None (handled as 404 in the views).
+    If the user exists, uses Cart.objects.get_or_create(user=user) to either
+    fetch the existing cart or create a new empty one.
+
+─── 6.5 product_stats() — Function-Based View ───
+
+  Decorated with @api_view(['GET']).
+
+  Uses two advanced ORM features:
+
+  1. aggregate(): Calculates OVERALL stats across ALL products:
+     - total_products = Count('id')
+     - average_price  = Avg('price')
+     - min_price      = Min('price')
+     - max_price      = Max('price')
+     - total_stock    = Sum('stock')
+     aggregate() returns a single dictionary, not a queryset.
+
+  2. annotate() + values(): Calculates PER-CATEGORY stats:
+     - product_count per category
+     - avg_price per category
+     - total_stock per category
+     annotate() attaches computed values to each row, then values() selects
+     specific columns and returns a list of dictionaries.
+
+
+================================================================================
+7. FILTERING SYSTEM (filters.py)
+================================================================================
+
+Uses django-filter's FilterSet class to create declarative filters.
+
+  class ProductFilter(FilterSet):
+      min_price     = NumberFilter(field_name='price', lookup_expr='gte')
+      max_price     = NumberFilter(field_name='price', lookup_expr='lte')
+      category      = NumberFilter(field_name='category__id')
+      category_name = CharFilter(field_name='category__name', lookup_expr='icontains')
+      in_stock      = BooleanFilter(method='filter_in_stock')
+
+  How each filter works:
+
+  • min_price: ?min_price=50 → WHERE price >= 50
+  • max_price: ?max_price=200 → WHERE price <= 200
+  • category: ?category=1 → WHERE category_id = 1
+  • category_name: ?category_name=electronics → WHERE category.name ILIKE '%electronics%'
+    (icontains = case-insensitive LIKE with wildcards on both sides)
+  • in_stock: ?in_stock=true → WHERE stock > 0
+              ?in_stock=false → WHERE stock = 0
+    This uses a custom filter method that branches on the boolean value.
+
+  All these filters can be COMBINED in a single request:
+    ?min_price=20&max_price=100&category_name=electronics&in_stock=true
+
+  The filters are connected to the ProductViewSet via filterset_class = ProductFilter.
+  DRF's DjangoFilterBackend (configured in settings.py) hooks this into the
+  view automatically.
+
+
+================================================================================
+8. CUSTOM EXCEPTION HANDLING (exceptions.py)
+================================================================================
+
+  def custom_exception_handler(exc, context):
+
+  This function replaces DRF's default exception handler. It is registered in
+  settings.py under REST_FRAMEWORK['EXCEPTION_HANDLER'].
+
+  How it works:
+    1. First, it calls DRF's default exception_handler(). If DRF can handle
+       the exception (e.g., 404, validation errors), it returns that response.
+
+    2. If DRF's handler returns None (meaning it didn't recognize the exception),
+       we check if it's an IntegrityError from the database. This catches
+       things like:
+       - Duplicate key violations
+       - Foreign key constraint failures
+       - Unique constraint violations
+       Returns a clean JSON error: {"error": "A database constraint was violated..."}
+       with status 400.
+
+    3. For any other unhandled exception (anything we didn't anticipate), it
+       returns a generic 500 error: {"error": "An unexpected error occurred..."}
+
+  WHY THIS MATTERS: Without this, Django would return an HTML error page (or a
+  raw traceback in debug mode), potentially exposing database internals. This
+  handler ensures the API ALWAYS returns clean JSON, even on unexpected errors.
+
+
+================================================================================
+9. URL ROUTING (urls.py)
+================================================================================
+
+─── 9.1 Root URLs (ecommerce/urls.py) ───
+
+  urlpatterns = [
+      path('admin/', admin.site.urls),        # Django admin panel
+      path('api/', include('store.urls')),     # All API routes under /api/
+  ]
+
+  All API routes are prefixed with /api/. The Django admin panel is at /admin/.
+
+─── 9.2 App URLs (store/urls.py) ───
+
+  router = DefaultRouter()
+  router.register(r'categories', CategoryViewSet, basename='category')
+  router.register(r'products',   ProductViewSet,   basename='product')
+  router.register(r'users',      UserViewSet,      basename='user')
+  router.register(r'carts',      CartViewSet,      basename='cart')
+
+  urlpatterns = [
+      path('', include(router.urls)),
+      path('stats/', views.product_stats, name='product-stats'),
+  ]
+
+  How DRF's DefaultRouter works:
+  • For each registered ViewSet, it automatically generates URL patterns:
+    - /api/categories/       → list (GET), create (POST)
+    - /api/categories/{id}/  → retrieve (GET), update (PUT/PATCH), destroy (DELETE)
+  • DefaultRouter also creates an API root page (browsable at /api/) that lists
+    all available endpoints.
+  • The CartViewSet's custom actions (add, remove, clear) get routes like:
+    - /api/carts/{pk}/add/
+    - /api/carts/{pk}/remove/
+    - /api/carts/{pk}/clear/
+    DRF generates these automatically because we used the @action decorator.
+  • The stats endpoint is a standalone function-based view, so it's added
+    manually as path('stats/', ...).
+
+
+================================================================================
+10. ADMIN PANEL CONFIGURATION (admin.py)
+================================================================================
+
+All 4 models are registered with the Django admin panel using @admin.register
+decorator and custom ModelAdmin classes:
+
+  CategoryAdmin: Displays name and created_at in list view; searchable by name.
+  ProductAdmin:  Displays name, price, stock, category, created_at; filterable
+                 by category in the sidebar; searchable by name and description.
+  CartAdmin:     Displays user and created_at.
+  CartItemAdmin: Displays cart, product, and quantity.
+
+This allows managing all data through Django's admin interface at /admin/
+(useful for debugging and manual data management).
+
+
+================================================================================
+11. DJANGO REST FRAMEWORK SETTINGS (settings.py)
+================================================================================
+
+Key settings under REST_FRAMEWORK = {}:
+
+  DEFAULT_PAGINATION_CLASS = 'rest_framework.pagination.PageNumberPagination'
+  PAGE_SIZE = 10
+
+  • All list endpoints return paginated responses with 10 items per page.
+  • Response includes 'count' (total items), 'next' (URL to next page),
+    'previous' (URL to previous page), and 'results' (the actual items).
+
+  DEFAULT_FILTER_BACKENDS = [
+      'django_filters.rest_framework.DjangoFilterBackend',
+      'rest_framework.filters.SearchFilter',
+      'rest_framework.filters.OrderingFilter',
+  ]
+
+  • DjangoFilterBackend: Enables ?field=value query parameter filtering
+    (connected to ProductFilter).
+  • SearchFilter: Enables ?search=keyword full-text search across fields
+    specified in search_fields on the viewset.
+  • OrderingFilter: Enables ?ordering=field_name to sort results.
+
+  EXCEPTION_HANDLER = 'store.exceptions.custom_exception_handler'
+
+  • Points to our custom exception handler (see section 8).
+
+Other notable settings:
+  INSTALLED_APPS includes 'rest_framework', 'django_filters', and 'store'.
+  DATABASE is SQLite (file-based, at db.sqlite3 in project root).
+  DEBUG = True (development mode — shows detailed error pages in browser).
+
+
+================================================================================
+12. SEED SCRIPT — SAMPLE DATA (seed.py)
+================================================================================
+
+Run with: python manage.py shell < store/seed.py
+
+The script populates the database with sample data:
+
+  4 Categories:
+    - Electronics ("Gadgets and electronic devices")
+    - Clothing ("Apparel and fashion items")
+    - Books ("Physical and digital books")
+    - Home & Kitchen ("Home appliances and kitchen tools")
+
+  12 Products across all categories:
+    Electronics: Smartphone ($699.99), Laptop ($1299.99), Wireless Earbuds ($149.99)
+    Clothing:    T-Shirt ($19.99), Jeans ($49.99), Jacket ($89.99)
+    Books:       Python Crash Course ($29.99), Clean Code ($34.99)
+    Home:        Blender ($59.99), Coffee Maker ($79.99), Toaster ($39.99),
+                 Desk Lamp ($24.99)
+
+  1 Test User:
+    username: testuser, password: test1234, email: test@example.com
+
+  The script uses get_or_create() for all records, making it IDEMPOTENT — you
+  can run it multiple times without creating duplicate data. Each run checks
+  if the record already exists before creating it.
+
+
+================================================================================
+13. API ENDPOINT REFERENCE
+================================================================================
+
+Base URL: http://localhost:8000/api/
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ CATEGORIES                                                                  │
+├──────────┬────────────────────────────┬─────────────────────────────────────┤
+│ Method   │ URL                        │ Description                         │
+├──────────┼────────────────────────────┼─────────────────────────────────────┤
+│ GET      │ /api/categories/           │ List all (with product_count)       │
+│ POST     │ /api/categories/           │ Create (body: name, description)    │
+│ GET      │ /api/categories/{id}/      │ Get one by ID                       │
+│ PUT      │ /api/categories/{id}/      │ Full update                         │
+│ PATCH    │ /api/categories/{id}/      │ Partial update                      │
+│ DELETE   │ /api/categories/{id}/      │ Delete (fails if has products)      │
+└──────────┴────────────────────────────┴─────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ PRODUCTS                                                                    │
+├──────────┬────────────────────────────┬─────────────────────────────────────┤
+│ GET      │ /api/products/             │ List (paginated, filterable)        │
+│ POST     │ /api/products/             │ Create (body: name, price, stock,   │
+│          │                            │ category, description)              │
+│ GET      │ /api/products/{id}/        │ Get one by ID                       │
+│ PUT      │ /api/products/{id}/        │ Full update                         │
+│ PATCH    │ /api/products/{id}/        │ Partial update                      │
+│ DELETE   │ /api/products/{id}/        │ Delete                              │
+└──────────┴────────────────────────────┴─────────────────────────────────────┘
+
+  Query Parameters:
+    ?search=keyword               Search name + description
+    ?min_price=N                  Minimum price
+    ?max_price=N                  Maximum price
+    ?category=ID                  Filter by category ID
+    ?category_name=text           Filter by category name (partial, case-insensitive)
+    ?in_stock=true/false          Filter by stock availability
+    ?ordering=field               Sort by: price, name, created_at, stock
+    ?ordering=-field              Sort descending (prefix with -)
+    ?page=N                       Pagination (10 per page)
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ USERS                                                                       │
+├──────────┬────────────────────────────┬─────────────────────────────────────┤
+│ GET      │ /api/users/                │ List all users                      │
+│ POST     │ /api/users/                │ Register (body: username, email,    │
+│          │                            │ password)                           │
+│ GET      │ /api/users/{id}/           │ Get one by ID                       │
+└──────────┴────────────────────────────┴─────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ CART                                                                        │
+├──────────┬─────────────────────────────┬────────────────────────────────────┤
+│ GET      │ /api/carts/{user_id}/       │ View cart                          │
+│ POST     │ /api/carts/{user_id}/add/   │ Add (body: product, quantity)      │
+│ POST     │ /api/carts/{user_id}/remove/│ Remove (body: product)             │
+│ DELETE   │ /api/carts/{user_id}/clear/ │ Clear all items                    │
+└──────────┴─────────────────────────────┴────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ AGGREGATIONS                                                                │
+├──────────┬────────────────────────────┬─────────────────────────────────────┤
+│ GET      │ /api/stats/                │ Overall + per-category stats        │
+└──────────┴────────────────────────────┴─────────────────────────────────────┘
+
+
+================================================================================
+14. REQUEST/RESPONSE FLOW (How a Request Travels Through the App)
+================================================================================
+
+Example: GET /api/products/?search=laptop&min_price=100&page=1
+
+  1. DJANGO RECEIVES THE REQUEST
+     → The request hits Django's URL resolver.
+     → ecommerce/urls.py matches /api/ → routes to store/urls.py.
+     → store/urls.py matches /products/ → routes to ProductViewSet.list().
+
+  2. MIDDLEWARE RUNS
+     → SecurityMiddleware, SessionMiddleware, CommonMiddleware, CsrfViewMiddleware,
+       AuthenticationMiddleware, MessageMiddleware, XFrameOptionsMiddleware
+       all execute in order (request phase).
+
+  3. DRF'S VIEW PROCESSING
+     → ProductViewSet.list() is called (inherited from ModelViewSet).
+     → It gets the base queryset: Product.objects.select_related('category').all()
+
+  4. FILTER BACKENDS RUN (in order defined in settings.py)
+     a. DjangoFilterBackend: Sees ?min_price=100, applies ProductFilter.
+        The queryset becomes: ...filter(price__gte=100)
+     b. SearchFilter: Sees ?search=laptop, applies icontains search on
+        name and description fields.
+        The queryset becomes: ...filter(Q(name__icontains='laptop') | Q(description__icontains='laptop'))
+     c. OrderingFilter: No ?ordering= param, uses default: ordering = ['-created_at']
+
+  5. PAGINATION
+     → PageNumberPagination kicks in. ?page=1 means items 1-10.
+     → It slices the queryset: queryset[0:10]
+     → It also runs a COUNT query to get the total number of matching items.
+
+  6. SERIALIZATION
+     → ProductSerializer(queryset, many=True) converts each Product instance
+       into a Python dictionary (including computed fields like category_name).
+
+  7. RESPONSE
+     → DRF wraps the result in a paginated response:
+       {
+         "count": 2,
+         "next": null,
+         "previous": null,
+         "results": [
+           {"id": 2, "name": "Laptop", "price": "1299.99", "category_name": "Electronics", ...},
+           {"id": 3, "name": "Wireless Earbuds", "price": "149.99", ...}
+         ]
+       }
+     → Response is returned as JSON with status 200.
+
+  8. MIDDLEWARE RUNS (response phase, in reverse order)
+
+  9. DJANGO SENDS THE HTTP RESPONSE to the client.
+
+─── Error Flow Example: POST /api/products/ with price=-10 ───
+
+  1-3. Same as above, but routed to ProductViewSet.create().
+  4. ProductSerializer validates the input.
+     → validate_price() catches price <= 0.
+     → Raises ValidationError("Price must be greater than zero.")
+  5. DRF catches the ValidationError and returns:
+     {"price": ["Price must be greater than zero."]} with status 400.
+
+─── Unhandled Error Flow: IntegrityError ───
+
+  1-4. Same as above.
+  5. The operation triggers a database IntegrityError (e.g., duplicate category).
+  6. DRF's default handler doesn't know how to handle it → returns None.
+  7. custom_exception_handler catches it → returns:
+     {"error": "A database constraint was violated..."} with status 400.
+
+
+================================================================================
+15. KEY DESIGN DECISIONS & PATTERNS USED
+================================================================================
+
+  1. VIEWSETS + ROUTER PATTERN
+     Instead of writing individual function views for each CRUD operation,
+     ViewSets bundle all related operations into one class. The Router
+     auto-generates URL patterns. This reduces boilerplate significantly.
+
+  2. select_related() FOR QUERY OPTIMIZATION
+     Used in ProductViewSet to prevent the N+1 query problem. Without it,
+     fetching 10 products with their category names would be 11 queries
+     (1 for products + 10 for each category). With select_related, it's 1 query.
+
+  3. annotate() FOR COMPUTED FIELDS
+     Category's product_count is computed in the database via SQL COUNT(),
+     not in Python. This is far more efficient for large datasets.
+
+  4. VALIDATION AT MULTIPLE LEVELS
+     - Model level: PositiveIntegerField, MinValueValidator, unique=True
+     - Serializer level: validate_price(), validate_email(), validate()
+     - View level: Cart stock checks, category deletion guard
+     This defense-in-depth approach ensures bad data is caught at every layer.
+
+  5. CUSTOM EXCEPTION HANDLER
+     Ensures the API NEVER returns HTML error pages or raw tracebacks.
+     Every response is clean, structured JSON.
+
+  6. get_or_create() FOR CARTS
+     Carts are lazily created. They don't exist until a user first accesses
+     their cart. This avoids creating empty carts for every registered user.
+
+  7. IDEMPOTENT SEED SCRIPT
+     Using get_or_create() in the seed script means it can be run multiple
+     times safely without duplicating data.
+
+  8. PASSWORD HASHING
+     UserSerializer.create() uses create_user() which hashes the password.
+     This is a critical security practice.
+
+  9. write_only=True FOR PASSWORDS
+     Passwords are accepted during registration but NEVER returned in any
+     API response, preventing accidental exposure.
+
+  10. DECIMAL FOR MONEY
+      DecimalField is used for prices instead of FloatField. This avoids
+      floating-point arithmetic errors that plague financial calculations
+      (e.g., 0.1 + 0.2 !== 0.3 in floating point).
+
+  11. POSTMAN COLLECTION INCLUDED
+      The file ecommerce_api.postman_collection.json can be imported into
+      Postman to instantly test all endpoints with pre-configured requests,
+      including edge cases like invalid inputs.
+
+
+================================================================================
+END OF DOCUMENT
+================================================================================

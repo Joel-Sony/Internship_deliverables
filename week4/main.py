@@ -73,6 +73,9 @@ def main():
             print(f"⚠️ Error: {e}")
         finally:
             session.close()
+            sys.exit()
 
 if __name__ == "__main__":
     main()
+
+#validate user inputs

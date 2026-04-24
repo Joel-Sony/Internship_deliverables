@@ -9,8 +9,7 @@ from services import (
     update_user_note,
     delete_user_note
 )
-from flask_migrate import Migrate
-from sqlalchemy import or_
+from flask_migrate import Migrate 
 from datetime import datetime
 
 app = Flask(__name__)
@@ -221,7 +220,9 @@ def create_share_link(note_id):
 
     if data and "expires_at" in data:
         expires_at = datetime.fromisoformat(data["expires_at"])
-
+    elif not data:
+        return jsonify({"error": "Invalid request data"}), 400
+    
     share = ShareLink(
         note_id=note.id,
         expires_at=expires_at

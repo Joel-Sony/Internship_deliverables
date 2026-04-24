@@ -1,0 +1,98 @@
+{
+  "info": {
+    "name": "Week 11 — E-commerce API",
+    "description": "Week 11 Assignment — E-commerce Backend API tests including external API mocking endpoint.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8000/api"
+    }
+  ],
+  "item": [
+    {
+      "name": "Categories",
+      "item": [
+        {
+          "name": "List Categories",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/categories/"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Products",
+      "item": [
+        {
+          "name": "List Products",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/products/"
+          }
+        },
+        {
+          "name": "Search Products",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/products/?search=laptop"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Cart",
+      "item": [
+        {
+          "name": "Get Cart",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/carts/1/"
+          }
+        },
+        {
+          "name": "Add to Cart",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/carts/1/add/",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"product\": 1, \"quantity\": 2}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Stats",
+      "item": [
+        {
+          "name": "Get Product Stats",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/stats/"
+          }
+        }
+      ]
+    },
+    {
+      "name": "External API",
+      "item": [
+        {
+          "name": "Get External Exchange Rate",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/external-rates/"
+          }
+        }
+      ]
+    }
+  ]
+}

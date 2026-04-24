@@ -29,3 +29,18 @@ Postman Collections: [View Collections](week5/api_tests.yaml)
 ## Week 6
 Updated Flask User Notes API with Categories, tags and keyword search  
 Postman Collections: [View Collections](week6/updated_api_tests.yaml)
+
+## Week 7
+Shareable Links for Notes — generate public share links with optional expiry and access tracking  
+Postman Collections: [View Collections](week7/api_tests.yaml)
+
+## Week 8
+Two-Factor Authentication System — email OTP, role-based permissions, account lockout  
+Postman Collection: [View Collection](week8/postman_collection.json)
+
+## Week 9
+E-Commerce Backend API — Products, Categories, Carts, search, filtering, pagination, aggregations  
+Postman Collection: [View Collection](week9/ecommerce_api.postman_collection.json)
+
+## Week 10
+File Uploads & Media Handling — multiple product image upload with auto thumbnail generation

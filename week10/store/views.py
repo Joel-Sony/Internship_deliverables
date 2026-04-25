@@ -125,19 +125,17 @@ class ProductImageViewSet(viewsets.ViewSet):
 
         for idx, image_file in enumerate(serializer.validated_data['images']):
             try:
-                img = ProductImage(
+                img = ProductImage.upload_to_cloudinary(
+                    file=image_file,
                     product=product,
-                    image=image_file,
                     alt_text=alt_text,
                     is_primary=(is_primary and idx == 0),
                 )
-                img.full_clean()  # run model-level validators
-                img.save()       # triggers thumbnail generation
                 created_images.append(img)
             except Exception as e:
                 errors.append({
                     "file": image_file.name,
-                    "error": str(e) if not hasattr(e, 'message_dict') else e.message_dict,
+                    "error": str(e),
                 })
 
         response_data = {
@@ -399,8 +397,3 @@ def product_stats(request):
             {"error": "An unexpected error occurred while fetching stats."},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
-
-#primary deletion 
-#presigned url s3
-#chunked upload
-#bucket 

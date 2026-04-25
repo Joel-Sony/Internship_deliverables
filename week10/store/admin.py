@@ -9,11 +9,10 @@ class CategoryAdmin(admin.ModelAdmin):
 
 
 class ProductImageInline(admin.TabularInline):
-    """Inline display of product images within the Product admin page."""
     model = ProductImage
     extra = 1
-    readonly_fields = ['thumbnail', 'uploaded_at']
-    fields = ['image', 'thumbnail', 'alt_text', 'is_primary', 'uploaded_at']
+    readonly_fields = ['image_url', 'thumbnail_url', 'uploaded_at']
+    fields = ['image_url', 'thumbnail_url', 'alt_text', 'is_primary', 'uploaded_at']
 
 
 @admin.register(Product)
@@ -32,7 +31,7 @@ class ProductAdmin(admin.ModelAdmin):
 class ProductImageAdmin(admin.ModelAdmin):
     list_display = ['id', 'product', 'is_primary', 'uploaded_at']
     list_filter = ['is_primary', 'product']
-    readonly_fields = ['thumbnail', 'uploaded_at']
+    readonly_fields = ['image_url', 'thumbnail_url', 'uploaded_at']
 
 
 @admin.register(Cart)

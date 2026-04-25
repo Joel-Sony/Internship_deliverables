@@ -29,30 +29,16 @@ class CategorySerializer(serializers.ModelSerializer):
 
 class ProductImageSerializer(serializers.ModelSerializer):
     """Read-only serializer for returning product image data."""
-    image_url = serializers.SerializerMethodField()
-    thumbnail_url = serializers.SerializerMethodField()
 
     class Meta:
         model = ProductImage
         fields = [
-            'id', 'product', 'image', 'image_url',
-            'thumbnail', 'thumbnail_url', 'alt_text',
-            'is_primary', 'uploaded_at',
+            'id', 'product',
+            'image_url', 'thumbnail_url',
+            'cloudinary_public_id',
+            'alt_text', 'is_primary', 'uploaded_at',
         ]
-        read_only_fields = ['id', 'thumbnail', 'uploaded_at']
-
-    def get_image_url(self, obj):
-        request = self.context.get('request')
-        if obj.image and request:
-            return request.build_absolute_uri(obj.image.url)
-        return None
-
-    def get_thumbnail_url(self, obj):
-        request = self.context.get('request')
-        if obj.thumbnail and request:
-            return request.build_absolute_uri(obj.thumbnail.url)
-        return None
-
+        read_only_fields = ['id', 'thumbnail_url', 'image_url', 'uploaded_at']
 
 class ProductImageUploadSerializer(serializers.Serializer):
     """

@@ -1,11 +1,11 @@
-import os
-from io import BytesIO
+import cloudinary
+import cloudinary.uploader
+import cloudinary.api
 
 from django.db import models
 from django.contrib.auth.models import User
-from django.core.validators import MinValueValidator, FileExtensionValidator
+from django.core.validators import MinValueValidator
 from django.core.exceptions import ValidationError
-from django.core.files.base import ContentFile
 
 from PIL import Image
 
@@ -13,32 +13,27 @@ from PIL import Image
 # ── Constants ──
 
 ALLOWED_IMAGE_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif', 'webp']
-ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
 MAX_IMAGE_SIZE_MB = 5
-MAX_IMAGE_SIZE_BYTES = MAX_IMAGE_SIZE_MB * 1024 * 1024  # 5 MB
-THUMBNAIL_MAX_SIZE = (300, 300)
+MAX_IMAGE_SIZE_BYTES = MAX_IMAGE_SIZE_MB * 1024 * 1024
 
 
 # ── Validators ──
 
 def validate_image_file_size(value):
-    """Reject files larger than MAX_IMAGE_SIZE_MB."""
     if value.size > MAX_IMAGE_SIZE_BYTES:
         raise ValidationError(
             f"Image file size must be under {MAX_IMAGE_SIZE_MB} MB. "
             f"Uploaded file is {value.size / (1024 * 1024):.2f} MB."
         )
 
-
 def validate_image_content_type(value):
-    """Verify that the uploaded file is a genuine image by reading its header."""
     try:
         img = Image.open(value)
-        img.verify()  # verify it's a real image
-        value.seek(0)  # reset pointer after verify
+        img.verify()
+        value.seek(0)
     except Exception:
         raise ValidationError(
-            "Uploaded file is not a valid image. "
+            f"Uploaded file is not a valid image. "
             f"Allowed types: {', '.join(ALLOWED_IMAGE_EXTENSIONS)}."
         )
 
@@ -81,40 +76,17 @@ class Product(models.Model):
 
 
 class ProductImage(models.Model):
-    """
-    Stores product images with automatic thumbnail generation.
-    Each product can have multiple images; one can be marked as primary.
-    """
     product = models.ForeignKey(
         Product,
         on_delete=models.CASCADE,
         related_name='images'
     )
-    image = models.ImageField(
-        upload_to='products/images/%Y/%m/',
-        validators=[
-            FileExtensionValidator(allowed_extensions=ALLOWED_IMAGE_EXTENSIONS),
-            validate_image_file_size,
-            validate_image_content_type,
-        ],
-        help_text=f"Allowed types: {', '.join(ALLOWED_IMAGE_EXTENSIONS)}. Max size: {MAX_IMAGE_SIZE_MB} MB."
-    )
-    thumbnail = models.ImageField(
-        upload_to='products/thumbnails/%Y/%m/',
-        blank=True,
-        editable=False,
-        help_text="Auto-generated 300×300 thumbnail."
-    )
-    alt_text = models.CharField(
-        max_length=200,
-        blank=True,
-        help_text="Alt text for accessibility."
-    )
-    is_ = models.BooleanField(
-        default=False,
-        helpprimary_text="Mark as the main display image for the product."
-    )
-    
+    cloudinary_public_id = models.CharField(max_length=500, blank=True)
+    thumbnail_public_id = models.CharField(max_length=500, blank=True)
+    image_url = models.URLField(max_length=1000, blank=True)
+    thumbnail_url = models.URLField(max_length=1000, blank=True)
+    alt_text = models.CharField(max_length=200, blank=True)
+    is_primary = models.BooleanField(default=False)
     uploaded_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -124,66 +96,54 @@ class ProductImage(models.Model):
         return f"Image for {self.product.name} ({'primary' if self.is_primary else 'secondary'})"
 
     def save(self, *args, **kwargs):
-        """Generate thumbnail before saving."""
-        # If this is marked primary, un-mark any other primary images
         if self.is_primary:
             ProductImage.objects.filter(
                 product=self.product, is_primary=True
             ).exclude(pk=self.pk).update(is_primary=False)
-
         super().save(*args, **kwargs)
 
-        # Generate thumbnail after the image has been saved to disk
-        if self.image and (not self.thumbnail or self._thumbnail_needs_update()):
-            self._generate_thumbnail()
-
     def delete(self, *args, **kwargs):
-        """Clean up files from disk when the record is deleted."""
-        image_path = self.image.path if self.image else None
-        thumb_path = self.thumbnail.path if self.thumbnail else None
+        for public_id in [self.cloudinary_public_id, self.thumbnail_public_id]:
+            if public_id:
+                try:
+                    cloudinary.api.delete_resources([public_id])
+                except Exception:
+                    pass
         super().delete(*args, **kwargs)
-        for path in [image_path, thumb_path]:
-            if path and os.path.isfile(path):
-                os.remove(path)
 
-    def _thumbnail_needs_update(self):
-        """Check if thumbnail is missing or outdated."""
-        if not self.thumbnail:
-            return True
-        try:
-            return not os.path.isfile(self.thumbnail.path)
-        except Exception:
-            return True
+    @classmethod
+    def upload_to_cloudinary(cls, file, product, alt_text='', is_primary=False):
+        upload_result = cloudinary.uploader.upload(
+            file,
+            folder=f"products/{product.pk}/images",
+            resource_type="image",
+        )
+        full_url = upload_result['secure_url']
+        full_public_id = upload_result['public_id']
 
-    def _generate_thumbnail(self):
-        """Create a 300×300 thumbnail from the original image."""
-        try:
-            img = Image.open(self.image.path)
+        file.seek(0)
+        thumb_result = cloudinary.uploader.upload(
+            file,
+            folder=f"products/{product.pk}/thumbnails",
+            resource_type="image",
+            transformation=[
+                {'width': 300, 'height': 300, 'crop': 'fill', 'gravity': 'auto'}
+            ],
+        )
+        thumb_url = thumb_result['secure_url']
+        thumb_public_id = thumb_result['public_id']
 
-            # Convert RGBA/P to RGB for JPEG compatibility
-            if img.mode in ('RGBA', 'P'):
-                img = img.convert('RGB')
-
-            img.thumbnail(THUMBNAIL_MAX_SIZE, Image.LANCZOS)
-
-            thumb_io = BytesIO()
-            img_format = 'JPEG'
-            ext = os.path.splitext(self.image.name)[1].lower()
-            if ext == '.png':
-                img_format = 'PNG'
-            elif ext == '.webp':
-                img_format = 'WEBP'
-            elif ext == '.gif':
-                img_format = 'GIF'
-
-            img.save(thumb_io, format=img_format, quality=85)
-            thumb_io.seek(0)
-
-            thumb_filename = f"thumb_{os.path.basename(self.image.name)}"
-            self.thumbnail.save(thumb_filename, ContentFile(thumb_io.read()), save=True)
-        except Exception:
-            # If thumbnail generation fails, continue without it
-            pass
+        img = cls(
+            product=product,
+            cloudinary_public_id=full_public_id,
+            thumbnail_public_id=thumb_public_id,
+            image_url=full_url,
+            thumbnail_url=thumb_url,
+            alt_text=alt_text,
+            is_primary=is_primary,
+        )
+        img.save()
+        return img
 
 
 class Cart(models.Model):

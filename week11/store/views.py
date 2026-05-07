@@ -1,7 +1,11 @@
+import requests
+
 from rest_framework import viewsets, status
-from rest_framework.decorators import api_view, action
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework.permissions import IsAuthenticated, IsAdminUser, AllowAny
+from rest_framework.decorators import action
 from django.contrib.auth.models import User
 from django.db.models import Count, Avg, Min, Max, Sum
 
@@ -14,13 +18,26 @@ from .serializers import (
 from .filters import ProductFilter
 
 
-# ── Category CRUD ──
+# ── Category CRUD (admin only for write; read is public) ──
 
 class CategoryViewSet(viewsets.ModelViewSet):
     serializer_class = CategorySerializer
 
+    def get_permissions(self):
+        if self.action in ('list', 'retrieve'):
+            return [AllowAny()]
+        return [IsAdminUser()]
+
     def get_queryset(self):
-        return Category.objects.annotate(product_count=Count('products'))
+        # Admins can see deleted categories too via ?include_deleted=true
+        qs = Category.objects.annotate(product_count=Count('products'))
+        if self.request.user.is_staff and self.request.query_params.get('include_deleted') == 'true':
+            qs = Category.all_objects.annotate(product_count=Count('products'))
+        return qs
+
+    def perform_destroy(self, instance):
+        """Soft-delete instead of hard-delete."""
+        instance.delete()   # calls SoftDeleteMixin.delete()
 
     def destroy(self, request, *args, **kwargs):
         category = self.get_object()
@@ -29,18 +46,73 @@ class CategoryViewSet(viewsets.ModelViewSet):
                 {"error": "Cannot delete category that has products. Remove products first."},
                 status=status.HTTP_400_BAD_REQUEST
             )
-        return super().destroy(request, *args, **kwargs)
+        self.perform_destroy(category)
+        return Response(
+            {"message": f"Category '{category.name}' soft-deleted."},
+            status=status.HTTP_200_OK
+        )
+
+    @action(detail=True, methods=['post'], permission_classes=[IsAdminUser])
+    def restore(self, request, pk=None):
+        """Restore a soft-deleted category."""
+        try:
+            category = Category.all_objects.get(pk=pk)
+        except Category.DoesNotExist:
+            return Response({"error": "Category not found."}, status=status.HTTP_404_NOT_FOUND)
+        if not category.is_deleted:
+            return Response({"error": "Category is not deleted."}, status=status.HTTP_400_BAD_REQUEST)
+        category.restore()
+        return Response(
+            {"message": f"Category '{category.name}' restored.", "category": CategorySerializer(category).data}
+        )
 
 
 # ── Product CRUD + Search + Filters + Pagination ──
 
 class ProductViewSet(viewsets.ModelViewSet):
-    queryset = Product.objects.select_related('category').prefetch_related('images').all()
     serializer_class = ProductSerializer
     filterset_class = ProductFilter
-    search_fields = ['name', 'description']  # ?search=keyword
-    ordering_fields = ['price', 'name', 'created_at', 'stock']  # ?ordering=price
-    ordering = ['-created_at']  # default ordering
+    search_fields = ['name', 'description']
+    ordering_fields = ['price', 'name', 'created_at', 'stock']
+    ordering = ['-created_at']
+
+    def get_permissions(self):
+        if self.action in ('list', 'retrieve', 'product_stats'):
+            return [AllowAny()]
+        return [IsAdminUser()]
+
+    def get_queryset(self):
+        qs = Product.objects.select_related('category').prefetch_related('images')
+        # Admins can see soft-deleted products with ?include_deleted=true
+        if self.request.user.is_staff and self.request.query_params.get('include_deleted') == 'true':
+            qs = Product.all_objects.select_related('category').prefetch_related('images')
+        return qs
+
+    def perform_destroy(self, instance):
+        """Soft-delete instead of hard-delete."""
+        instance.delete()   # calls SoftDeleteMixin.delete()
+
+    def destroy(self, request, *args, **kwargs):
+        product = self.get_object()
+        self.perform_destroy(product)
+        return Response(
+            {"message": f"Product '{product.name}' soft-deleted."},
+            status=status.HTTP_200_OK
+        )
+
+    @action(detail=True, methods=['post'], permission_classes=[IsAdminUser])
+    def restore(self, request, pk=None):
+        """Restore a soft-deleted product."""
+        try:
+            product = Product.all_objects.get(pk=pk)
+        except Product.DoesNotExist:
+            return Response({"error": "Product not found."}, status=status.HTTP_404_NOT_FOUND)
+        if not product.is_deleted:
+            return Response({"error": "Product is not deleted."}, status=status.HTTP_400_BAD_REQUEST)
+        product.restore()
+        return Response(
+            {"message": f"Product '{product.name}' restored.", "product": ProductSerializer(product).data}
+        )
 
 
 # ── Product Image Upload & Management ──
@@ -57,10 +129,16 @@ class ProductImageViewSet(viewsets.ViewSet):
     """
     parser_classes = [MultiPartParser, FormParser]
 
+    def get_permissions(self):
+        # Uploading, deleting, and setting primary require admin
+        if self.action in ('upload', 'destroy', 'set_primary'):
+            return [IsAdminUser()]
+        return [AllowAny()]
+
     # ── Helpers ──
 
     def _get_product(self, product_id):
-        """Fetch product or return None.""" 
+        """Fetch product or return None."""
         try:
             return Product.objects.get(pk=product_id)
         except Product.DoesNotExist:
@@ -96,7 +174,6 @@ class ProductImageViewSet(viewsets.ViewSet):
                 status=status.HTTP_404_NOT_FOUND
             )
 
-        # Collect files — DRF's request.FILES is a MultiValueDict
         files = request.FILES.getlist('images')
         if not files:
             return Response(
@@ -104,7 +181,6 @@ class ProductImageViewSet(viewsets.ViewSet):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        # Run through serializer validation
         serializer = ProductImageUploadSerializer(data={
             'images': files,
             'alt_text': request.data.get('alt_text', ''),
@@ -131,8 +207,8 @@ class ProductImageViewSet(viewsets.ViewSet):
                     alt_text=alt_text,
                     is_primary=(is_primary and idx == 0),
                 )
-                img.full_clean()  # run model-level validators
-                img.save()       # triggers thumbnail generation
+                img.full_clean()
+                img.save()
                 created_images.append(img)
             except Exception as e:
                 errors.append({
@@ -223,7 +299,7 @@ class ProductImageViewSet(viewsets.ViewSet):
 
         try:
             image_id = image.id
-            image.delete()  # model's delete() cleans up files
+            image.delete()
             return Response(
                 {"message": f"Image {image_id} deleted successfully."},
                 status=status.HTTP_200_OK
@@ -254,7 +330,6 @@ class ProductImageViewSet(viewsets.ViewSet):
             )
 
         try:
-            # Un-mark all others and set this one
             ProductImage.objects.filter(
                 product=product, is_primary=True
             ).update(is_primary=False)
@@ -273,39 +348,47 @@ class ProductImageViewSet(viewsets.ViewSet):
             )
 
 
-# ── User Registration ──
+# ── User Registration (public) ──
 
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
-    http_method_names = ['get', 'post']  # only list, create, retrieve
+    http_method_names = ['get', 'post']
+
+    def get_permissions(self):
+        # Anyone can register; listing users requires admin
+        if self.action == 'create':
+            return [AllowAny()]
+        return [IsAdminUser()]
 
 
-# ── Cart ──
+# ── Cart (authenticated users manage their own cart) ──
 
 class CartViewSet(viewsets.ViewSet):
     """
-    Cart operations using user_id as a path param.
-    GET  /carts/{user_id}/       → view cart
-    POST /carts/{user_id}/add/   → add item
-    POST /carts/{user_id}/remove/→ remove item
-    DELETE /carts/{user_id}/clear/→ clear cart
-    """
+    Cart operations — always scoped to the authenticated user's own cart.
 
-    def retrieve(self, request, pk=None):
-        """View a user's cart."""
-        cart = self._get_or_create_cart(pk)
-        if cart is None:
-            return Response({"error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+    GET    /cart/        → view my cart
+    POST   /cart/add/    → add item
+    POST   /cart/remove/ → remove item
+    DELETE /cart/clear/  → clear cart
+    """
+    permission_classes = [IsAuthenticated]
+
+    def _get_or_create_cart(self, user):
+        cart, _ = Cart.objects.get_or_create(user=user)
+        return cart
+
+    def list(self, request):
+        """View the authenticated user's cart."""
+        cart = self._get_or_create_cart(request.user)
         serializer = CartSerializer(cart)
         return Response(serializer.data)
 
-    @action(detail=True, methods=['post'])
-    def add(self, request, pk=None):
+    @action(detail=False, methods=['post'])
+    def add(self, request):
         """Add a product to cart. Body: {product: id, quantity: int}"""
-        cart = self._get_or_create_cart(pk)
-        if cart is None:
-            return Response({"error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+        cart = self._get_or_create_cart(request.user)
 
         serializer = CartItemSerializer(data=request.data)
         if not serializer.is_valid():
@@ -314,7 +397,6 @@ class CartViewSet(viewsets.ViewSet):
         product = serializer.validated_data['product']
         quantity = serializer.validated_data.get('quantity', 1)
 
-        # If item already in cart, update quantity
         try:
             item = CartItem.objects.get(cart=cart, product=product)
             new_qty = item.quantity + quantity
@@ -330,12 +412,10 @@ class CartViewSet(viewsets.ViewSet):
 
         return Response(CartSerializer(cart).data, status=status.HTTP_200_OK)
 
-    @action(detail=True, methods=['post'])
-    def remove(self, request, pk=None):
+    @action(detail=False, methods=['post'])
+    def remove(self, request):
         """Remove a product from cart. Body: {product: id}"""
-        cart = self._get_or_create_cart(pk)
-        if cart is None:
-            return Response({"error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+        cart = self._get_or_create_cart(request.user)
 
         product_id = request.data.get('product')
         if not product_id:
@@ -349,27 +429,18 @@ class CartViewSet(viewsets.ViewSet):
 
         return Response(CartSerializer(cart).data, status=status.HTTP_200_OK)
 
-    @action(detail=True, methods=['delete'])
-    def clear(self, request, pk=None):
-        """Clear all items from cart."""
-        cart = self._get_or_create_cart(pk)
-        if cart is None:
-            return Response({"error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+    @action(detail=False, methods=['delete'])
+    def clear(self, request):
+        """Clear all items from the authenticated user's cart."""
+        cart = self._get_or_create_cart(request.user)
         cart.items.all().delete()
         return Response({"message": "Cart cleared."}, status=status.HTTP_200_OK)
 
-    def _get_or_create_cart(self, user_id):
-        try:
-            user = User.objects.get(pk=user_id)
-        except User.DoesNotExist:
-            return None
-        cart, _ = Cart.objects.get_or_create(user=user)
-        return cart
 
-
-# ── Aggregation Stats Endpoint ──
+# ── Aggregation Stats Endpoint (public) ──
 
 @api_view(['GET'])
+@permission_classes([AllowAny])
 def product_stats(request):
     """Aggregated product statistics — shows ORM aggregation skills."""
     try:
@@ -381,7 +452,6 @@ def product_stats(request):
             total_stock=Sum('stock'),
         )
 
-        # Per-category stats
         category_stats = list(
             Category.objects.annotate(
                 product_count=Count('products'),
@@ -400,11 +470,11 @@ def product_stats(request):
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
 
-# ── External API Integration ──
 
-import requests
+# ── External API Integration (public) ──
 
 @api_view(['GET'])
+@permission_classes([AllowAny])
 def external_exchange_rate(request):
     """Fetches exchange rates from an external API, to be mocked in tests."""
     try:
@@ -414,8 +484,3 @@ def external_exchange_rate(request):
         return Response({"base": data.get("base"), "rates": data.get("rates")})
     except requests.RequestException:
         return Response({"error": "Failed to fetch external data."}, status=status.HTTP_502_BAD_GATEWAY)
-
-#primary deletion 
-#presigned url s3
-#chunked upload
-#bucket 

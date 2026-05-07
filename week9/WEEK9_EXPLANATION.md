@@ -85,7 +85,7 @@ category_stats = list(
 
 def get_queryset(self):
     return Category.objects.annotate(product_count=Count('products'))
-```
+``` 
 
 This adds a `product_count` field to every category returned by `GET /api/categories/`,
 showing how many products belong to each category — another use of annotation.

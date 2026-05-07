@@ -1,5 +1,6 @@
 import os
 from io import BytesIO
+from django.utils import timezone
 
 from django.db import models
 from django.contrib.auth.models import User
@@ -8,6 +9,48 @@ from django.core.exceptions import ValidationError
 from django.core.files.base import ContentFile
 
 from PIL import Image
+
+
+# ── Soft Delete Manager ──
+
+class SoftDeleteManager(models.Manager):
+    """Default manager: only returns non-deleted records."""
+    def get_queryset(self):
+        return super().get_queryset().filter(is_deleted=False)
+
+
+class AllObjectsManager(models.Manager):
+    """Bypass soft-delete filter — use with Model.all_objects."""
+    pass
+
+
+# ── Soft Delete Mixin ──
+
+class SoftDeleteMixin(models.Model):
+    is_deleted = models.BooleanField(default=False, db_index=True)
+    deleted_at = models.DateTimeField(null=True, blank=True)
+
+    objects = SoftDeleteManager()
+    all_objects = AllObjectsManager()  # includes deleted records
+
+    class Meta:
+        abstract = True
+
+    def delete(self, using=None, keep_parents=False):
+        """Soft-delete: mark as deleted instead of removing the row."""
+        self.is_deleted = True
+        self.deleted_at = timezone.now()
+        self.save(update_fields=['is_deleted', 'deleted_at'])
+
+    def restore(self):
+        """Un-delete a soft-deleted record."""
+        self.is_deleted = False
+        self.deleted_at = None
+        self.save(update_fields=['is_deleted', 'deleted_at'])
+
+    def hard_delete(self):
+        """Permanently remove the row from the database."""
+        super().delete()
 
 
 # ── Constants ──
@@ -43,7 +86,7 @@ def validate_image_content_type(value):
         )
 
 
-class Category(models.Model):
+class Category(SoftDeleteMixin):
     name = models.CharField(max_length=100, unique=True)
     description = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -56,7 +99,7 @@ class Category(models.Model):
         return self.name
 
 
-class Product(models.Model):
+class Product(SoftDeleteMixin):
     name = models.CharField(max_length=200)
     description = models.TextField(blank=True)
     price = models.DecimalField(

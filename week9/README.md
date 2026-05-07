@@ -13,21 +13,25 @@ Advanced ORM & Pagination assignment using Django REST Framework.
 
 ## Setup
 
+- ### Create and activate virtual environment
 ```bash
-# Create and activate virtual environment
 python3 -m venv venv
 source venv/bin/activate
-
-# Install dependencies
+```
+- ### Install dependencies
+```
 pip install -r requirements.txt
-
-# Run migrations
+```
+- ### Run migrations
+```
 python manage.py migrate
-
-# Seed sample data
+```
+- ### Seed sample data
+```
 python manage.py shell < store/seed.py
-
-# Run server
+```
+- ### Run server
+```
 python manage.py runserver
 ```
 
@@ -53,7 +57,7 @@ Base URL: `http://localhost:8000/api/`
 | PUT/PATCH | `/api/products/{id}/` | Update product |
 | DELETE | `/api/products/{id}/` | Delete product |
 
-**Query Parameters for Products:**
+### Query Parameters for Products:
 | Param | Example | Description |
 |-------|---------|-------------|
 | `search` | `?search=laptop` | Search by name or description |
@@ -95,13 +99,3 @@ CartItem: id, cart_id (FK), product_id (FK), quantity  [unique_together: cart+pr
 User:     Django's built-in auth_user table
 ```
 
-## Postman Collection
-
-Import `ecommerce_api.postman_collection.json` into Postman to test all endpoints.
-
-## Tech Stack
-
-- Python 3 / Django 5.2
-- Django REST Framework
-- django-filter
-- MySQL
